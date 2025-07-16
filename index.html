@@ -2,409 +2,357 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>云落图床</title>
     <style>
-        /* CSS 样式开始 */
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* 引入更现代的字体 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             margin: 0;
-            padding: 20px 15px; /* 略微调整内边距 */
-            background: linear-gradient(135deg, #e0f2f7 0%, #b3e5fc 100%); /* 更柔和的背景渐变 */
+            padding: 20px;
+            background-color: #f0f2f5;
             color: #333;
-            line-height: 1.7; /* 稍微增加行高，提高可读性 */
-            -webkit-text-size-adjust: 100%; /* Prevent text size adjustment on mobile */
-            display: flex; /* 使用flex布局使内容居中 */
+            display: flex;
             justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* 确保内容能占满整个视口高度 */
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
 
         .container {
-            width: 100%; /* 让容器宽度适应小屏幕 */
-            max-width: 550px; /* 限制最大宽度 */
-            margin: 0 auto;
-            background-color: rgba(255, 255, 255, 0.95); /* 半透明白色背景 */
-            padding: 25px; /* 增加内边距 */
-            border-radius: 12px; /* 更圆润的边角 */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* 更深的阴影 */
+            background-color: #fff;
+            padding: 30px 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
             text-align: center;
-            backdrop-filter: blur(5px); /* 添加背景模糊效果 */
-            -webkit-backdrop-filter: blur(5px); /* Safari 兼容 */
+            box-sizing: border-box;
         }
 
-        h1, h2 {
-            color: #0277bd; /* 更深的蓝色，用于标题 */
-            margin-bottom: 25px; /* 增加标题下方间距 */
-            font-weight: 600; /* 字体加粗 */
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 24px;
+            font-weight: 600;
         }
 
-        .upload-area {
-            margin-bottom: 30px;
-            padding: 30px 20px; /* 增加内边距 */
-            border: 2px dashed #b3e5fc; /* 使用更亮的蓝色边框 */
-            border-radius: 10px; /* 圆润边角 */
-            background-color: #ffffff; /* 白色背景 */
-            cursor: pointer;
-            transition: background-color 0.3s ease, border-color 0.3s ease; /* 过渡效果 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 150px; /* 增加最小高度 */
+        /* 隐藏原生的文件选择按钮 */
+        #imageUpload {
+            display: none;
         }
 
-        .upload-area:hover {
-            background-color: #e3f2fd; /* 悬停时背景变浅 */
-            border-color: #0288d1; /* 悬停时边框变深 */
-        }
-
-        #uploadStatus {
-            margin-top: 15px;
-            font-weight: 500; /* 中等粗细 */
-            color: #555; /* 稍浅的灰色 */
-            min-height: 1.7em; /* 避免内容变化导致布局跳动 */
-        }
-
-        /* 加载状态指示器 */
-        .uploading-indicator::after {
-            content: '';
+        .custom-file-upload {
             display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #ccc;
-            border-top-color: #0277bd; /* 主题色 */
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-left: 10px;
-            vertical-align: middle;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-
-        .btn-primary {
-            display: inline-block;
-            background-color: #0277bd; /* 深蓝色 */
+            padding: 15px 30px;
+            background-color: #007bff;
             color: white;
-            padding: 12px 30px; /* 增加按钮大小 */
-            border: none;
-            border-radius: 8px; /* 圆角按钮 */
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1.1em;
-            font-weight: 500; /* 中等粗细 */
-            transition: background-color 0.3s ease, transform 0.2s ease; /* 添加点击缩放效果 */
-            box-shadow: 0 4px 10px rgba(2, 119, 189, 0.3); /* 按钮阴影 */
-            margin-bottom: 10px; /* 为uploadStatus留出空间 */
-        }
-
-        .btn-primary:hover {
-            background-color: #0288d1; /* 悬停时变亮 */
-            transform: translateY(-2px); /* 鼠标悬停时轻微上移 */
-        }
-        .btn-primary:active {
-            transform: translateY(0); /* 点击时恢复原位 */
-            box-shadow: 0 2px 5px rgba(2, 119, 189, 0.3); /* 点击时减小阴影 */
-        }
-
-        .btn-secondary {
-            display: inline-block;
-            background-color: #78909c; /* 中度灰色 */
-            color: white;
-            padding: 8px 18px;
-            border: none;
-            border-radius: 6px; /* 圆角 */
-            cursor: pointer;
-            font-size: 0.95em; /* 调整字体大小 */
-            margin-left: 10px;
+            font-size: 18px;
+            font-weight: 500;
             transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 5px rgba(120, 144, 156, 0.3); /* 按钮阴影 */
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+            width: calc(100% - 60px); /* 适应宽度 */
+            max-width: 280px;
         }
 
-        .btn-secondary:hover {
-            background-color: #90a4ae; /* 悬停时变亮 */
-            transform: translateY(-1px);
+        .custom-file-upload:active {
+            transform: scale(0.98);
         }
-         .btn-secondary:active {
-            transform: translateY(0);
-            box-shadow: 0 1px 3px rgba(120, 144, 156, 0.3);
+
+        .upload-tip {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        #apiSelector {
+            width: calc(100% - 40px);
+            max-width: 300px;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            font-size: 16px;
+            color: #495057;
+            -webkit-appearance: none; /* 移除默认样式 */
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23495057'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 18px;
+            cursor: pointer;
+        }
+
+        #uploadButton {
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+            width: calc(100% - 60px); /* 适应宽度 */
+            max-width: 280px;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+        }
+
+        #uploadButton:disabled {
+            background-color: #95d49f;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        #statusMessage {
+            margin-top: 25px;
+            font-size: 16px;
+            color: #007bff;
+            min-height: 20px; /* 避免内容变化时布局跳动 */
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            max-height: 150px;
+            margin: 20px auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            display: block; /* 默认隐藏 */
+            object-fit: contain;
         }
 
         .result-area {
-            margin-top: 25px; /* 增加上边距 */
-            padding: 20px;
-            border: 1px solid #e0e0e0; /* 更浅的边框 */
-            border-radius: 10px; /* 圆角 */
-            background-color: #fdfdfd; /* 更干净的背景 */
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* 轻微阴影 */
-        }
-
-        .uploaded-image {
-            max-width: 100%;
-            height: auto;
-            margin-bottom: 20px; /* 增加底部间距 */
-            border-radius: 8px; /* 圆角图片 */
-            border: 1px solid #e0e0e0; /* 图片边框 */
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* 图片阴影 */
-        }
-
-        .image-link {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 15px;
-            background-color: #f9f9f9; /* 链接区域背景 */
-            padding: 15px 10px;
-            border-radius: 8px;
-            border: 1px solid #eee;
-        }
-
-        .image-link span {
-            margin-right: 12px;
-            margin-bottom: 8px;
-            font-size: 0.95em; /* 调整文字大小 */
-            color: #555;
-            flex-shrink: 0; /* 防止文字被压缩 */
-        }
-
-        .image-link input[type="text"] {
-            flex-grow: 1;
-            padding: 10px 12px; /* 增加输入框内边距 */
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 0.95em;
-            background-color: #fff;
-            margin-bottom: 8px;
-            box-sizing: border-box; /* 确保padding和border包含在width内 */
-            width: 100%; /* 默认宽度100% */
-        }
-
-        .history-area {
             margin-top: 30px;
-            padding: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 10px;
-            background-color: #fdfdfd;
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
             text-align: left;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: none; /* 默认隐藏 */
+            word-break: break-all; /* 确保长URL不溢出 */
         }
 
-        /* Font import for Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
-
-
-        /* Responsive adjustments */
-        @media (max-width: 480px) {
-            .container {
-                padding: 20px; /* 减小内边距 */
-            }
-            .btn-primary {
-                font-size: 1em;
-                padding: 10px 25px; /* 调整按钮大小 */
-            }
-            .btn-secondary {
-                margin-left: 0; /* 去掉边距 */
-                margin-top: 10px; /* 增加顶部边距 */
-            }
-            .image-link {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .image-link span {
-                margin-right: 0;
-                margin-bottom: 10px;
-                text-align: center;
-            }
-            .image-link input[type="text"] {
-                width: calc(100% - 24px); /* 调整宽度，考虑内边距 */
-                margin-bottom: 10px;
-            }
-            .upload-area {
-                padding: 25px 15px;
-                min-height: 120px;
-            }
+        .result-area p {
+            margin: 0 0 10px 0;
+            font-size: 15px;
+            color: #555;
         }
-        /* CSS 样式结束 */
+
+        #resultUrl {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #0056b3;
+            overflow-x: auto; /* 允许横向滚动 */
+            white-space: nowrap; /* 不换行 */
+            display: block;
+        }
+
+        #copyButton {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+            width: calc(100% - 40px);
+            max-width: 200px;
+        }
+
+        #copyButton:hover {
+            background-color: #5a6268;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-weight: 500;
+        }
+
+        .success-message {
+            color: #28a745;
+            font-weight: 500;
+        }
+
+        .loading-message {
+            color: #007bff;
+            font-weight: 500;
+        }
+
+        .footer-contact {
+            margin-top: 40px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .footer-contact a {
+            color: #007bff;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>云落图床</h1>
 
-        <div class="upload-area">
-            <input type="file" id="imageUpload" accept="image/*" hidden>
-            <!-- 隐藏原始文件输入，通过按钮触发 -->
-            <button id="uploadButton" class="btn-primary">选择图片上传</button>
-            <p id="uploadStatus">请选择一张图片进行上传</p>
+        <select id="apiSelector">
+            <option value="main">主接口 (360图床)</option>
+            <option value="backup">备用接口 (京东图床)</option>
+        </select>
+        <p class="upload-tip" style="margin-top: 10px; margin-bottom: 20px; font-size: 13px; color: #888;">
+            接口可能不稳定，如遇上传失败可尝试切换。
+        </p>
+
+        <label for="imageUpload" class="custom-file-upload">
+            选择图片或拍照
+        </label>
+        <input type="file" id="imageUpload" accept="image/*">
+        <p class="upload-tip">一个图片文件即可轻松上传，大小限制：5MB，无压缩</p>
+
+        <img id="imagePreview" src="" alt="图片预览" style="display: none;">
+
+        <button id="uploadButton">上传图片</button>
+
+        <p id="statusMessage"></p>
+
+        <div id="resultArea" class="result-area">
+            <p>图片链接:</p>
+            <span id="resultUrl"></span>
+            <button id="copyButton">复制URL</button>
         </div>
 
-        <div id="resultArea" class="result-area" style="display: none;">
-            <h2>上传结果</h2>
-            <img id="uploadedImage" src="" alt="上传的图片" class="uploaded-image">
-            <div class="image-link">
-                <span>图片链接:</span>
-                <input type="text" id="imageUrl" readonly placeholder="图片链接将显示在这里...">
-                <button id="copyButton" class="btn-secondary">复制</button>
-            </div>
-        </div>
-
-        <!-- 可选的：历史统计/列表区域 -->
-        <div id="historyArea" class="history-area" style="display: none;">
-            <h2>历史记录</h2>
-            <!-- 这里会展示历史列表 -->
-            <p>（历史记录功能待实现）</p>
-        </div>
-    </div>
+      
 
     <script>
-        // JavaScript 代码开始
-        const uploadButton = document.getElementById('uploadButton');
         const imageUpload = document.getElementById('imageUpload');
-        const uploadStatus = document.getElementById('uploadStatus');
+        const customFileUpload = document.querySelector('.custom-file-upload');
+        const apiSelector = document.getElementById('apiSelector');
+        const uploadButton = document.getElementById('uploadButton');
+        const statusMessage = document.getElementById('statusMessage');
+        const imagePreview = document.getElementById('imagePreview');
         const resultArea = document.getElementById('resultArea');
-        const uploadedImage = document.getElementById('uploadedImage');
-        const imageUrlInput = document.getElementById('imageUrl');
+        const resultUrl = document.getElementById('resultUrl');
         const copyButton = document.getElementById('copyButton');
-        // const historyArea = document.getElementById('historyArea'); // 如果需要历史记录
 
-        // API 地址
-        const API_URL = 'https://api.xinyew.cn/api/360tc';
+        let selectedFile = null; // 用于存储选择的文件
 
-        // 点击上传按钮时触发文件选择器
-        uploadButton.addEventListener('click', () => {
-            imageUpload.click();
+        const API_ENDPOINTS = {
+            main: 'https://api.xinyew.cn/api/360tc',
+            backup: 'https://api.xinyew.cn/api/jdtc'
+        };
+
+        // 监听文件选择框的变化
+        imageUpload.addEventListener('change', (event) => {
+            selectedFile = event.target.files[0];
+            if (selectedFile) {
+                statusMessage.textContent = `已选择文件: ${selectedFile.name}`;
+                statusMessage.className = ''; // 清除之前的状态样式
+
+                // 显示图片预览
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(selectedFile);
+
+                // 检查文件大小
+                if (selectedFile.size > 5 * 1024 * 1024) { // 5MB 限制
+                    statusMessage.textContent = '警告：图片大小超过5MB限制，无法上传！';
+                    statusMessage.className = 'error-message';
+                    uploadButton.disabled = true; // 禁用上传按钮
+                    selectedFile = null; // 清除文件，防止误操作
+                    imagePreview.style.display = 'none'; // 隐藏预览
+                } else {
+                    uploadButton.disabled = false; // 启用上传按钮
+                }
+            } else {
+                statusMessage.textContent = '请选择图片。';
+                statusMessage.className = '';
+                uploadButton.disabled = true;
+                imagePreview.style.display = 'none';
+            }
+            // 隐藏结果区域
+            resultArea.style.display = 'none';
         });
 
-        // 让上传区域本身也支持点击来触发文件选择
-        const uploadArea = document.querySelector('.upload-area');
-        uploadArea.addEventListener('click', () => {
-            imageUpload.click();
-        });
-
-        // 文件选择器内容变化时触发上传
-        imageUpload.addEventListener('change', async (event) => {
-            const file = event.target.files[0];
-            if (!file) {
-                // 用户取消了选择
-                uploadStatus.textContent = '请选择一张图片进行上传';
+        // 监听上传按钮点击事件
+        uploadButton.addEventListener('click', async () => {
+            if (!selectedFile) {
+                statusMessage.textContent = '请先选择图片文件！';
+                statusMessage.className = 'error-message';
                 return;
             }
 
-            // 简单的文件类型检查 (可选，但推荐)
-            if (!file.type.startsWith('image/')) {
-                uploadStatus.textContent = '请选择一个图片文件！';
-                imageUpload.value = ''; // 清空文件选择器
+            // 再次检查文件大小，以防万一
+            if (selectedFile.size > 5 * 1024 * 1024) {
+                statusMessage.textContent = '图片大小超过5MB限制，无法上传！';
+                statusMessage.className = 'error-message';
                 return;
             }
 
-            // 显示上传状态并添加加载指示器
-            uploadStatus.textContent = '正在上传';
-            uploadStatus.classList.add('uploading-indicator');
-
-            resultArea.style.display = 'none'; // 隐藏上一次的结果
+            statusMessage.textContent = '图片上传中...';
+            statusMessage.className = 'loading-message';
+            uploadButton.disabled = true; // 上传中禁用按钮
+            resultArea.style.display = 'none'; // 隐藏结果区域
 
             const formData = new FormData();
-            // 假设 API 的参数名是 'file'，这通常是标准做法
-            formData.append('file', file);
+            formData.append('file', selectedFile); // 字段名必须是 'file'
+
+            const selectedApi = apiSelector.value;
+            const apiUrl = API_ENDPOINTS[selectedApi];
 
             try {
-                // 再次确认 API 的请求方法。如果 API 确实是 GET 并且支持文件上传，
-                // 请务必与开发者沟通具体如何将文件作为参数传递，可能需要Base64编码。
-                // 以下代码继续以 POST 为例，这是处理文件上传的标准方式。
-                const response = await fetch(API_URL, {
-                    method: 'POST', // 保持 POST 方法，根据之前讨论
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
                     body: formData
                 });
 
-                if (!response.ok) {
-                    // 如果网络请求本身失败 (例如 404, 500 等非 2xx 状态码)
-                    let errorDetail = `网络请求失败: ${response.status} ${response.statusText}`;
-                    try {
-                        // 尝试解析服务器返回的 JSON 错误信息
-                        const errorData = await response.json();
-                        if (errorData && errorData.error) {
-                            errorDetail = errorData.error; // 使用API提供的错误信息
-                        } else if (errorData) {
-                            errorDetail = JSON.stringify(errorData); // 或者直接显示原始错误信息
-                        }
-                    } catch (e) {
-                        // 如果响应不是 JSON 格式，则使用默认的错误信息
-                    }
-                    throw new Error(errorDetail);
-                }
+                const data = await response.json();
 
-                const data = await response.json(); // 解析JSON响应
-
-                // *** 基于您提供的 API 返回结构进行判断 ***
-                if (data.errno === 0 && data.data && data.data.url) {
-                    // 上传成功
-                    uploadStatus.textContent = '上传成功!';
-                    uploadStatus.classList.remove('uploading-indicator'); // 移除加载指示器
-                    const imageUrl = data.data.url; // 图片链接在此
-                    uploadedImage.src = imageUrl;
-                    imageUrlInput.value = imageUrl;
-                    resultArea.style.display = 'block';
+                // 根据API返回结构判断
+                if (data.errno === 0) {
+                    statusMessage.textContent = '上传成功！';
+                    statusMessage.className = 'success-message';
+                    resultUrl.textContent = data.data.url; // 两个API都使用 data.data.url
+                    resultArea.style.display = 'block'; // 显示结果区域
                 } else {
-                    // 上传失败，或返回了错误格式
-                    const errorMessage = data.error || "上传失败，未知错误";
-                    uploadStatus.textContent = `上传失败: ${errorMessage}`;
-                    uploadStatus.classList.remove('uploading-indicator'); // 移除加载指示器
-                    console.error('Upload failed:', data); // 打印失败的API返回数据，便于调试
+                    // 主接口错误信息在 error 字段，备用接口在 message 字段
+                    const errorMessage = data.error || data.message || '未知错误';
+                    statusMessage.textContent = `上传失败: ${errorMessage}`;
+                    statusMessage.className = 'error-message';
+                    resultArea.style.display = 'none';
                 }
-
             } catch (error) {
-                // 捕获网络请求错误或解析 JSON 过程中的错误
-                console.error('Fetch or JSON parsing error:', error);
-                uploadStatus.textContent = `上传失败: ${error.message}`;
-                uploadStatus.classList.remove('uploading-indicator'); // 移除加载指示器
+                statusMessage.textContent = `网络错误或请求失败: ${error.message}`;
+                statusMessage.className = 'error-message';
+                console.error('上传出错:', error);
+                resultArea.style.display = 'none';
             } finally {
-                // 无论成功还是失败，清空文件选择器，以便下次可以上传同一个文件
-                imageUpload.value = '';
+                uploadButton.disabled = false; // 恢复上传按钮
             }
         });
 
-        // 复制图片链接
+        // 监听复制按钮点击事件
         copyButton.addEventListener('click', () => {
-            imageUrlInput.select();
-            imageUrlInput.setSelectionRange(0, 99999); // For mobile devices
-
-            try {
-                // navigator.clipboard.writeText() 是更现代的方式，但需要HTTPS或本地主机环境。
-                // document.execCommand('copy') 兼容性更好，尤其是在本地文件打开时。
-                const successful = document.execCommand('copy');
-                if (successful) {
+            const urlToCopy = resultUrl.textContent;
+            if (urlToCopy) {
+                // 使用 Clipboard API 复制文本
+                navigator.clipboard.writeText(urlToCopy).then(() => {
                     alert('图片链接已复制到剪贴板！');
-                } else {
-                    alert('复制失败，请手动复制链接。');
-                }
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-                alert('复制失败，请手动复制链接。');
+                }).catch(err => {
+                    console.error('无法复制到剪贴板:', err);
+                    alert('复制失败，请手动复制。');
+                });
             }
         });
-
-        // 如果您需要历史记录功能，请提供相应的API接口信息。
-        // 届时可以在这里添加一个异步函数来获取并渲染历史数据。
-        /*
-        async function loadHistory() {
-            try {
-                // const historyResponse = await fetch('YOUR_HISTORY_API_URL');
-                // const historyData = await historyResponse.json();
-                // ... 渲染历史列表到 historyArea ...
-                // historyArea.style.display = 'block';
-            } catch (error) {
-                console.error('Load history error:', error);
-            }
-        }
-        loadHistory(); // 页面加载时调用
-        */
-
-        /* JavaScript 代码结束 */
     </script>
 </body>
 </html>
