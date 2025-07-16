@@ -196,6 +196,125 @@
             color: #007bff;
             text-decoration: none;
         }
+
+        /* 新增样式：一言区域和历史记录区域 */
+        .yiyan-area {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+            min-height: 20px;
+        }
+
+        #refreshYiyanButton {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+
+        #refreshYiyanButton:hover {
+            background-color: #5a6268;
+        }
+
+        .history-area {
+            margin-top: 40px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            text-align: left;
+        }
+
+        .history-area h2 {
+            font-size: 18px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            font-size: 13px;
+            transition: background-color 0.2s ease;
+            word-break: break-all;
+        }
+
+        .history-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .history-item span {
+            flex-grow: 1;
+            margin-right: 10px;
+            color: #333;
+            cursor: pointer; /* 点击可以复制 */
+        }
+
+        .history-item .copy-icon {
+            flex-shrink: 0;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .history-item .copy-icon:hover {
+            background-color: #0056b3;
+        }
+
+        .history-item .delete-button {
+            flex-shrink: 0;
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.2s ease;
+        }
+
+        .history-item .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        /* 针对手机端的一些调整 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 15px;
+            }
+            .custom-file-upload, #uploadButton {
+                width: calc(100% - 30px);
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+            #apiSelector {
+                width: calc(100% - 30px);
+                padding: 10px 15px;
+            }
+            #resultUrl, .history-item span {
+                white-space: normal; /* 在小屏幕上允许换行 */
+            }
+            .history-item {
+                flex-wrap: wrap; /* 允许换行 */
+            }
+            .history-item .copy-icon, .history-item .delete-button {
+                margin-top: 5px; /* 上移按钮间距 */
+            }
+        }
     </style>
 </head>
 <body>
@@ -204,7 +323,7 @@
 
         <select id="apiSelector">
             <option value="main">主接口 (360图床)</option>
-            <option value="backup">备用接口 (京东图床)</option>
+            <option value="backup">备用接口 (京东图by)</option>
         </select>
         <p class="upload-tip" style="margin-top: 10px; margin-bottom: 20px; font-size: 13px; color: #888;">
             接口可能不稳定，如遇上传失败可尝试切换。
@@ -228,11 +347,25 @@
             <button id="copyButton">复制URL</button>
         </div>
 
-      
+        <div class="yiyan-area">
+            <p id="yiyanContent" style="margin: 0;"></p>
+            <button id="refreshYiyanButton">刷新一言</button>
+        </div>
+
+        <div class="history-area">
+            <h2>上传历史</h2>
+            <ul id="historyList">
+                </ul>
+        </div>
+
+        <div class="footer-contact">
+            <p>联系方式：<a href="mailto:jiayuxuan_2024@qq.com">jiayuxuan_2024@qq.com</a></p>
+            <p>本站仅供学习交流使用</p>
+        </div>
+    </div>
 
     <script>
         const imageUpload = document.getElementById('imageUpload');
-        const customFileUpload = document.querySelector('.custom-file-upload');
         const apiSelector = document.getElementById('apiSelector');
         const uploadButton = document.getElementById('uploadButton');
         const statusMessage = document.getElementById('statusMessage');
@@ -240,6 +373,13 @@
         const resultArea = document.getElementById('resultArea');
         const resultUrl = document.getElementById('resultUrl');
         const copyButton = document.getElementById('copyButton');
+        const yiyanContent = document.getElementById('yiyanContent');
+        const refreshYiyanButton = document.getElementById('refreshYiyanButton');
+
+        // --- 历史记录相关 ---
+        const historyList = document.getElementById('historyList');
+        const localStorageKey = 'yunluo_image_upload_history';
+        const MAX_HISTORY_ITEMS = 10; // 最多保存10条记录
 
         let selectedFile = null; // 用于存储选择的文件
 
@@ -247,6 +387,74 @@
             main: 'https://api.xinyew.cn/api/360tc',
             backup: 'https://api.xinyew.cn/api/jdtc'
         };
+
+        // --- 函数定义 ---
+
+        // 加载历史记录
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+            renderHistory(history);
+        }
+
+        // 渲染历史记录
+        function renderHistory(history) {
+            historyList.innerHTML = ''; // 清空列表
+            if (history.length === 0) {
+                historyList.innerHTML = '<li style="text-align: center; color: #888;">暂无上传记录</li>';
+                return;
+            }
+            history.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'history-item';
+                li.innerHTML = `
+                    <span title="点击复制" data-url="${item.url}">${item.name}</span>
+                    <button class="copy-icon">复制</button>
+                    <button class="delete-button">删除</button>
+                `;
+                historyList.appendChild(li);
+            });
+        }
+
+        // 添加历史记录
+        function addHistoryItem(name, url) {
+            let history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+            // 检查是否已存在相同的URL，如果存在则不重复添加，或者更新信息
+            const existingIndex = history.findIndex(item => item.url === url);
+            if (existingIndex !== -1) {
+                // 如果已存在，可以更新文件名或时间戳，这里简单替换
+                history[existingIndex] = { name, url, timestamp: Date.now() };
+            } else {
+                history.unshift({ name, url, timestamp: Date.now() }); // 添加到最前面
+            }
+
+            // 限制历史记录数量
+            if (history.length > MAX_HISTORY_ITEMS) {
+                history = history.slice(0, MAX_HISTORY_ITEMS);
+            }
+
+            localStorage.setItem(localStorageKey, JSON.stringify(history));
+            loadHistory(); // 重新加载并渲染
+        }
+
+        // 删除单条历史记录
+        function deleteHistoryItem(urlToDelete) {
+            let history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
+            history = history.filter(item => item.url !== urlToDelete);
+            localStorage.setItem(localStorageKey, JSON.stringify(history));
+            loadHistory(); // 重新加载并渲染
+        }
+
+        // 复制历史记录中的链接
+        function copyHistoryUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('图片链接已复制到剪贴板！');
+            }).catch(err => {
+                console.error('无法复制到剪贴板:', err);
+                alert('复制失败，请手动复制。');
+            });
+        }
+
+        // --- 事件监听 ---
 
         // 监听文件选择框的变化
         imageUpload.addEventListener('change', (event) => {
@@ -264,8 +472,9 @@
                 reader.readAsDataURL(selectedFile);
 
                 // 检查文件大小
-                if (selectedFile.size > 5 * 1024 * 1024) { // 5MB 限制
-                    statusMessage.textContent = '警告：图片大小超过5MB限制，无法上传！';
+                const MAX_FILE_SIZE_MB = 5;
+                if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) { // 5MB 限制
+                    statusMessage.textContent = `警告：图片大小超过${MAX_FILE_SIZE_MB}MB限制，无法上传！`;
                     statusMessage.className = 'error-message';
                     uploadButton.disabled = true; // 禁用上传按钮
                     selectedFile = null; // 清除文件，防止误操作
@@ -292,8 +501,9 @@
             }
 
             // 再次检查文件大小，以防万一
-            if (selectedFile.size > 5 * 1024 * 1024) {
-                statusMessage.textContent = '图片大小超过5MB限制，无法上传！';
+            const MAX_FILE_SIZE_MB = 5;
+            if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                statusMessage.textContent = `图片大小超过${MAX_FILE_SIZE_MB}MB限制，无法上传！`;
                 statusMessage.className = 'error-message';
                 return;
             }
@@ -315,14 +525,32 @@
                     body: formData
                 });
 
+                // 检查响应是否成功 (HTTP 状态码 2xx)
+                if (!response.ok) {
+                    let errorDetails = `HTTP 错误! 状态: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        errorDetails += `, 详情: ${errorData.message || errorData.error || JSON.stringify(errorData)}`;
+                    } catch (jsonError) {
+                        // 如果响应不是JSON，或者JSON解析失败
+                        errorDetails += `, 响应体无法解析为JSON。`;
+                    }
+                    throw new Error(errorDetails);
+                }
+
+                // 尝试解析JSON响应
                 const data = await response.json();
 
                 // 根据API返回结构判断
                 if (data.errno === 0) {
                     statusMessage.textContent = '上传成功！';
                     statusMessage.className = 'success-message';
-                    resultUrl.textContent = data.data.url; // 两个API都使用 data.data.url
+                    const uploadedUrl = data.data.url;
+                    resultUrl.textContent = uploadedUrl;
                     resultArea.style.display = 'block'; // 显示结果区域
+
+                    // 添加到历史记录
+                    addHistoryItem(selectedFile.name, uploadedUrl);
                 } else {
                     // 主接口错误信息在 error 字段，备用接口在 message 字段
                     const errorMessage = data.error || data.message || '未知错误';
@@ -331,7 +559,8 @@
                     resultArea.style.display = 'none';
                 }
             } catch (error) {
-                statusMessage.textContent = `网络错误或请求失败: ${error.message}`;
+                // 捕获网络错误、JSON解析错误或自定义的HTTP错误
+                statusMessage.textContent = `上传失败: ${error.message || '未知错误，请检查网络或稍后再试'}`;
                 statusMessage.className = 'error-message';
                 console.error('上传出错:', error);
                 resultArea.style.display = 'none';
@@ -351,6 +580,67 @@
                     console.error('无法复制到剪贴板:', err);
                     alert('复制失败，请手动复制。');
                 });
+            }
+        });
+
+        // 获取并显示一言
+        async function fetchYiyan() {
+            const yiyanApiUrl = 'https://api.nnxv.cn/api/yiyan.php'; // 新的一言API地址
+            try {
+                const response = await fetch(yiyanApiUrl);
+                
+                // 检查网络响应是否成功
+                if (!response.ok) {
+                    // 如果HTTP状态码不是2xx，则抛出错误
+                    throw new Error(`HTTP 错误! 状态: ${response.status}`);
+                }
+                
+                // 尝试解析JSON
+                const data = await response.json(); 
+
+                // 检查返回的JSON中是否有content字段
+                // 优化：使用可选链操作符?.来安全访问属性
+                if (data?.content) { 
+                    yiyanContent.textContent = data.content;
+                } else {
+                    // 如果data不是对象，或者没有content字段
+                    yiyanContent.textContent = '未能获取一言，API返回数据格式不正确。';
+                    console.error('一言API返回数据格式不正确或缺少content字段:', data);
+                }
+            } catch (error) {
+                // 捕获网络错误、JSON解析错误或自定义的HTTP错误
+                yiyanContent.textContent = `未能获取一言，请稍后再试 (${error.message || '未知错误'})。`;
+                console.error('获取一言失败:', error);
+            }
+        }
+
+        // 监听刷新一言按钮点击事件
+        refreshYiyanButton.addEventListener('click', fetchYiyan);
+
+        // --- 初始化 ---
+        // 页面加载完成后获取一言并加载历史记录
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchYiyan();
+            loadHistory();
+        });
+
+        // 为历史记录列表添加事件委托
+        historyList.addEventListener('click', (event) => {
+            const target = event.target;
+            const historyItem = target.closest('.history-item');
+
+            if (!historyItem) return; // 如果点击的不是历史记录项的子元素，则不处理
+
+            const url = historyItem.querySelector('span').dataset.url;
+
+            if (target.classList.contains('copy-icon')) {
+                copyHistoryUrl(url);
+            } else if (target.classList.contains('delete-button')) {
+                if (confirm('确定要删除这条历史记录吗？')) {
+                    deleteHistoryItem(url);
+                }
+            } else if (target.tagName === 'SPAN') { // 点击文件名区域也复制
+                 copyHistoryUrl(url);
             }
         });
     </script>
