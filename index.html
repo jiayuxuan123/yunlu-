@@ -277,6 +277,7 @@
             <select id="apiSelector" class="mdui-select" mdui-select>
                 <option value="main">主接口 (360图床)</option>
                 <option value="backup">备用接口 (京东图床)</option>
+                <option value="picgo">PicGo图床 (Chevereto)</option>
             </select>
         </div>
         <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换</p>
@@ -289,7 +290,7 @@
             </label>
         </div>
         <input type="file" id="imageUpload" accept="image/*">
-        <p class="upload-tip mdui-text-color-grey-600">京东单张图片限制 5MB，无压缩</p>
+        <p class="upload-tip mdui-text-color-grey-600">主接口和京东图床单张图片限制 5MB，PicGo图床单张 25MB，均无压缩</p>
 
         <img id="imagePreview" src="" alt="图片预览" style="display: none;">
 
@@ -363,10 +364,22 @@
         const localStorageKey = 'yunluo_image_upload_history_v2';
         const MAX_HISTORY_ITEMS = 15;
         const THEME_KEY = 'yunluo_theme_mode';
-        const MAX_FILE_SIZE_MB = 5;
+        
+        // 定义不同API的最大文件大小
+        const MAX_FILE_SIZE = {
+            main: 5 * 1024 * 1024,   // 5MB
+            backup: 5 * 1024 * 1024, // 5MB
+            picgo: 25 * 1024 * 1024  // 25MB
+        };
+        
+        // PicGo API密钥
+        const PICGO_API_KEY = 'chv_SGDFr_6ff30575b071a65ce5aa95839e3080899543deb7d507ef74e55e46d13fc4307d01849df53b0519c3a4defaf26591f7d228b2a13184aa136f7417db379bd5ce35';
+
+        // 包含API端点
         const API_ENDPOINTS = {
             main: 'https://api.xinyew.cn/api/360tc',
             backup: 'https://api.xinyew.cn/api/jdtc',
+            picgo: 'https://www.picgo.net/api/1/upload'
         };
 
         let selectedFile = null;
@@ -390,8 +403,12 @@
         function handleFileSelect(file) {
             if (!file) return;
 
-            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-                statusMessage.textContent = `图片超过 ${MAX_FILE_SIZE_MB}MB，请重新选择！`;
+            const selectedApi = apiSelector.value;
+            const currentMaxFileSize = MAX_FILE_SIZE[selectedApi] || MAX_FILE_SIZE.main; // 默认为主接口限制
+
+            if (file.size > currentMaxFileSize) {
+                const maxMb = currentMaxFileSize / (1024 * 1024);
+                statusMessage.textContent = `图片超过 ${maxMb}MB，请重新选择！`;
                 statusMessage.style.color = 'red';
                 selectedFile = null;
                 uploadButton.disabled = true;
@@ -496,10 +513,22 @@
             progressBar.style.width = '0%';
 
             const formData = new FormData();
-            formData.append('file', selectedFile);
+            const selectedApi = apiSelector.value;
+
+            // 根据API选择不同的文件参数名
+            if (selectedApi === 'picgo') {
+                formData.append('source', selectedFile);
+            } else {
+                formData.append('file', selectedFile);
+            }
 
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', API_ENDPOINTS[apiSelector.value], true);
+            xhr.open('POST', API_ENDPOINTS[selectedApi], true);
+
+            // 为PicGo API添加授权头
+            if (selectedApi === 'picgo') {
+                xhr.setRequestHeader('X-API-Key', PICGO_API_KEY);
+            }
 
             xhr.upload.onprogress = e => {
                 if (e.lengthComputable) {
@@ -516,22 +545,43 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     try {
                         const data = JSON.parse(xhr.responseText);
-                        if (data.errno === 0 && data.data.url) {
+                        let success = false;
+                        let uploadedUrl = '';
+                        let errorMessage = 'API返回未知错误';
+
+                        // 根据API处理不同的成功响应格式
+                        if (selectedApi === 'picgo') {
+                            if (data.status_code === 200 && data.image && data.image.url) {
+                                success = true;
+                                uploadedUrl = data.image.url;
+                            } else {
+                                errorMessage = data.error?.message || 'PicGo API 返回错误';
+                            }
+                        } else { // 原有的API逻辑
+                            if (data.errno === 0 && data.data.url) {
+                                success = true;
+                                uploadedUrl = data.data.url;
+                            } else {
+                                errorMessage = data.error || data.message || 'API 返回错误';
+                            }
+                        }
+                        
+                        if (success) {
                             statusMessage.textContent = '上传成功！';
                             statusMessage.style.color = '#4CAF50';
-                            const url = data.data.url;
-                            resultUrl.textContent = url;
+                            resultUrl.textContent = uploadedUrl;
                             resultArea.style.display = 'block';
-                            addHistoryItem(selectedFile.name, url);
+                            addHistoryItem(selectedFile.name, uploadedUrl);
                         } else {
-                            throw new Error(data.error || data.message || 'API返回错误');
+                           throw new Error(errorMessage);
                         }
+
                     } catch (e) {
                         statusMessage.textContent = `上传失败: ${e.message}`;
                         statusMessage.style.color = 'red';
                     }
                 } else {
-                    statusMessage.textContent = `上传失败: HTTP ${xhr.status}错误`;
+                    statusMessage.textContent = `上传失败: HTTP ${xhr.status} 错误`;
                     statusMessage.style.color = 'red';
                 }
             };
@@ -546,10 +596,9 @@
             xhr.send(formData);
         }
 
-        // --- FIXED fetchYiyan function ---
         async function fetchYiyan() {
             try {
-                const response = await fetch('https://img.8845.top/yiyan'); // Using a more stable API
+                const response = await fetch('https://img.8845.top/yiyan');
                 if (!response.ok) {
                     throw new Error(`网络响应错误，状态码: ${response.status}`);
                 }
@@ -628,6 +677,13 @@
                 } else {
                     const url = historyItem.querySelector('.history-item-info').dataset.url;
                     copyToClipboard(url, '历史图片链接已复制！');
+                }
+            });
+
+            // 当接口选择变化时，重新检查文件大小限制
+            apiSelector.addEventListener('change', () => {
+                if (selectedFile) { // 如果已经选择了文件，重新验证大小
+                    handleFileSelect(selectedFile);
                 }
             });
         }
