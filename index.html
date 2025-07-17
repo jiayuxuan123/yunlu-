@@ -4,644 +4,642 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>云落图床</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
+        :root {
+            --theme-accent-color: #3f51b5;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             margin: 0;
-            padding: 20px;
-            background-color: #f0f2f5;
+            padding: 0;
+            background-color: #f8f9fa;
             color: #333;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
             box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
             background-color: #fff;
-            padding: 30px 20px;
+            padding: 20px 15px;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             width: 100%;
-            max-width: 400px;
+            max-width: 480px;
             text-align: center;
             box-sizing: border-box;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         h1 {
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-size: 24px;
-            font-weight: 600;
+            color: var(--theme-accent-color);
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 700;
         }
 
-        /* 隐藏原生的文件选择按钮 */
         #imageUpload {
             display: none;
         }
 
-        .custom-file-upload {
-            display: inline-block;
-            padding: 15px 30px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 18px;
-            font-weight: 500;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
-            width: calc(100% - 60px); /* 适应宽度 */
-            max-width: 280px;
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 25px 15px;
+            margin: 15px 0;
+            background-color: #fcfcfc;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+        }
+        .upload-area.dragover {
+            background-color: #eef7ff;
+            border-color: var(--theme-accent-color);
+        }
+        .upload-area-icon {
+            font-size: 50px;
+            color: #aaa;
+            transition: color 0.2s ease;
+        }
+        .upload-area.dragover .upload-area-icon {
+            color: var(--theme-accent-color);
         }
 
-        .custom-file-upload:active {
-            transform: scale(0.98);
-        }
-
-        .upload-tip {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 30px;
-        }
-
-        #apiSelector {
-            width: calc(100% - 40px);
-            max-width: 300px;
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            background-color: #f8f9fa;
+        .mdui-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            line-height: 48px;
             font-size: 16px;
-            color: #495057;
-            -webkit-appearance: none; /* 移除默认样式 */
-            -moz-appearance: none;
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23495057'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 15px center;
-            background-size: 18px;
-            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+            padding: 0 18px;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 280px;
+            margin: 10px auto;
         }
 
-        #uploadButton {
-            background-color: #28a745;
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s ease, opacity 0.3s ease;
-            width: calc(100% - 60px); /* 适应宽度 */
-            max-width: 280px;
-            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.2);
+        .mdui-btn .material-icons {
+            font-size: 22px;
+            margin-right: 8px;
         }
 
         #uploadButton:disabled {
-            background-color: #95d49f;
+            background-color: #a5d8a9 !important;
             cursor: not-allowed;
-            opacity: 0.7;
+            opacity: 0.8;
+            box-shadow: none;
         }
 
+        .upload-tip {
+            font-size: 13px;
+            color: #777;
+            line-height: 1.5;
+            margin-top: 5px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        #uploadProgressContainer {
+            margin: 15px 0;
+            display: none;
+        }
+        .mdui-progress-determinate::-webkit-progress-bar {
+            background-color: #e0e0e0;
+        }
+        .mdui-progress-determinate::-webkit-progress-value {
+            background-color: var(--theme-accent-color);
+        }
+
+
         #statusMessage {
-            margin-top: 25px;
-            font-size: 16px;
-            color: #007bff;
-            min-height: 20px; /* 避免内容变化时布局跳动 */
+            margin-top: 15px;
+            font-size: 15px;
+            min-height: 22px;
+            line-height: 1.5;
+            font-weight: 500;
         }
 
         #imagePreview {
             max-width: 100%;
             max-height: 150px;
-            margin: 20px auto;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            display: block; /* 默认隐藏 */
+            margin: 15px auto;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            display: block;
             object-fit: contain;
         }
 
         .result-area {
-            margin-top: 30px;
-            background-color: #e9ecef;
-            border: 1px solid #dee2e6;
+            margin-top: 25px;
+            background-color: #f5f5f5;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
-            padding: 15px;
+            padding: 20px;
             text-align: left;
-            display: none; /* 默认隐藏 */
-            word-break: break-all; /* 确保长URL不溢出 */
-        }
-
-        .result-area p {
-            margin: 0 0 10px 0;
-            font-size: 15px;
-            color: #555;
-        }
-
-        #resultUrl {
-            background-color: #f8f9fa;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #0056b3;
-            overflow-x: auto; /* 允许横向滚动 */
-            white-space: nowrap; /* 不换行 */
-            display: block;
-        }
-
-        #copyButton {
-            background-color: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 15px;
-            width: calc(100% - 40px);
-            max-width: 200px;
-        }
-
-        #copyButton:hover {
-            background-color: #5a6268;
-        }
-
-        .error-message {
-            color: #dc3545;
-            font-weight: 500;
-        }
-
-        .success-message {
-            color: #28a745;
-            font-weight: 500;
-        }
-
-        .loading-message {
-            color: #007bff;
-            font-weight: 500;
-        }
-
-        .footer-contact {
-            margin-top: 40px;
-            font-size: 13px;
-            color: #888;
-        }
-
-        .footer-contact a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        /* 新增样式：一言区域和历史记录区域 */
-        .yiyan-area {
-            margin-top: 30px;
-            font-size: 14px;
-            color: #666;
-            min-height: 20px;
-        }
-
-        #refreshYiyanButton {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
-        }
-
-        #refreshYiyanButton:hover {
-            background-color: #5a6268;
-        }
-
-        .history-area {
-            margin-top: 40px;
-            border-top: 1px solid #eee;
-            padding-top: 20px;
-            text-align: left;
-        }
-
-        .history-area h2 {
-            font-size: 18px;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .history-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 5px;
-            background-color: #f8f9fa;
-            font-size: 13px;
-            transition: background-color 0.2s ease;
+            display: none;
             word-break: break-all;
         }
-
-        .history-item:hover {
-            background-color: #e9ecef;
+        .result-area p {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 500;
+            color: #555;
+        }
+        #resultUrl {
+            background-color: #fdfdfd;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 14px;
+            color: #0056b3;
+            overflow-x: auto;
+            white-space: nowrap;
+            display: block;
+        }
+        #copyUrlButton {
+            margin-top: 15px;
+            max-width: 180px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        .history-item span {
+
+        .history-area {
+            margin-top: 35px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            text-align: center;
+        }
+        .history-area h2 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        #historyList {
+            padding-left: 0;
+            list-style: none;
+            text-align: left;
+        }
+        .history-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background-color: #fbfbfb;
+            border-radius: 8px;
+            font-size: 13px;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+        .history-item-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-right: 12px;
+            flex-shrink: 0;
+            background-color: #eee;
+        }
+        .history-item-info {
             flex-grow: 1;
             margin-right: 10px;
-            color: #333;
-            cursor: pointer; /* 点击可以复制 */
-        }
-
-        .history-item .copy-icon {
-            flex-shrink: 0;
-            padding: 5px 10px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.2s ease;
-            font-size: 12px;
-            margin-right: 5px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
-
-        .history-item .copy-icon:hover {
-            background-color: #0056b3;
-        }
-
+        .history-item-info span { color: #333; }
         .history-item .delete-button {
+            height: 32px;
+            width: 32px;
+            min-width: 32px;
+            padding: 0;
+            border-radius: 50%;
             flex-shrink: 0;
-            padding: 5px 10px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: background-color 0.2s ease;
+        }
+        .history-item .delete-button .material-icons {
+            margin: 0;
+            font-size: 18px;
         }
 
-        .history-item .delete-button:hover {
-            background-color: #c82333;
-        }
 
-        /* 针对手机端的一些调整 */
+        .yiyan-area, .footer-contact { margin-top: 35px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; }
+        #yiyanContent { font-size: 15px; color: #666; font-style: italic; min-height: 20px; line-height: 1.6; margin: 0 0 15px 0;}
+        #refreshYiyanButton { height: 40px; line-height: 40px; padding: 0 18px; font-size: 14px; background-color: #616161; }
+        #clearHistoryButton { margin-top: 20px; height: 40px; line-height: 40px; font-size: 14px; background-color: #ef5350; color: white; }
+
+        .footer-contact { font-size: 12px; color: #999; }
+        .footer-contact a { color: #007bff; text-decoration: none; }
+
+        .theme-toggle-button { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: var(--theme-accent-color); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1000; }
+        .theme-toggle-button:hover { background-color: #303f9f; }
+        .theme-toggle-button .material-icons { font-size: 28px; margin: 0; }
+
+        /* --- 暗色模式 --- */
+        body.dark-mode { background-color: #212121; color: #eee; }
+        body.dark-mode .container { background-color: #303030; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4); }
+        body.dark-mode h1, body.dark-mode h2 { color: #eeeeee; }
+        body.dark-mode .upload-tip, body.dark-mode .yiyan-area #yiyanContent, body.dark-mode .footer-contact { color: #b0b0b0; }
+        body.dark-mode .upload-area { background-color: #2a2a2a; border-color: #555; }
+        body.dark-mode .upload-area.dragover { background-color: #3a3a3a; border-color: #90caf9;}
+        body.dark-mode .upload-area-icon { color: #666; }
+        body.dark-mode .upload-area.dragover .upload-area-icon { color: #90caf9; }
+        body.dark-mode .mdui-progress-determinate::-webkit-progress-bar { background-color: #555; }
+        body.dark-mode .result-area { background-color: #424242; border-color: #555; }
+        body.dark-mode .result-area p { color: #ccc; }
+        body.dark-mode #resultUrl { background-color: #3a3a3a; border-color: #555; color: #90caf9; }
+        body.dark-mode .history-item { background-color: #424242; }
+        body.dark-mode .history-item-thumb { background-color: #555; }
+        body.dark-mode .history-item-info span { color: #ddd; }
+        body.dark-mode .theme-toggle-button { background-color: #9e9e9e; }
+
         @media (max-width: 480px) {
-            .container {
-                padding: 20px 15px;
-            }
-            .custom-file-upload, #uploadButton {
-                width: calc(100% - 30px);
-                padding: 12px 20px;
-                font-size: 16px;
-            }
-            #apiSelector {
-                width: calc(100% - 30px);
-                padding: 10px 15px;
-            }
-            #resultUrl, .history-item span {
-                white-space: normal; /* 在小屏幕上允许换行 */
-            }
-            .history-item {
-                flex-wrap: wrap; /* 允许换行 */
-            }
-            .history-item .copy-icon, .history-item .delete-button {
-                margin-top: 5px; /* 上移按钮间距 */
-            }
+            .container { padding: 15px 10px; }
+            h1 { font-size: 24px; }
+            .mdui-btn { height: 44px; line-height: 44px; font-size: 15px; }
+            .history-item-thumb { width: 35px; height: 35px; margin-right: 10px;}
         }
     </style>
 </head>
-<body>
-    <div class="container">
+<body class="mdui-theme-primary-indigo mdui-theme-accent-blue">
+    <div class="container mdui-shadow-2">
         <h1>云落图床</h1>
 
-        <select id="apiSelector">
-            <option value="main">主接口 (360图床)</option>
-            <option value="backup">备用接口 (京东图by)</option>
-        </select>
-        <p class="upload-tip" style="margin-top: 10px; margin-bottom: 20px; font-size: 13px; color: #888;">
-            接口可能不稳定，如遇上传失败可尝试切换。
-        </p>
+        <div class="mdui-select-container">
+            <select id="apiSelector" class="mdui-select" mdui-select>
+                <option value="main">主接口 (360图床)</option>
+                <option value="backup">备用接口 (京东图床)</option>
+            </select>
+        </div>
+        <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换</p>
 
-        <label for="imageUpload" class="custom-file-upload">
-            选择图片或拍照
-        </label>
+        <div id="uploadArea" class="upload-area">
+            <i class="material-icons upload-area-icon">cloud_upload</i>
+            <p class="upload-tip">拖拽图片到这里，或</p>
+            <label for="imageUpload" class="custom-file-upload mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
+                <i class="material-icons">add_photo_alternate</i>点击选择图片
+            </label>
+        </div>
         <input type="file" id="imageUpload" accept="image/*">
-        <p class="upload-tip">一个图片文件即可轻松上传，大小限制：5MB，无压缩</p>
+        <p class="upload-tip mdui-text-color-grey-600">京东单张图片限制 5MB，无压缩</p>
 
         <img id="imagePreview" src="" alt="图片预览" style="display: none;">
 
-        <button id="uploadButton">上传图片</button>
+        <button id="uploadButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-green" disabled>
+            <i class="material-icons">backup</i>开始上传
+        </button>
 
-        <p id="statusMessage"></p>
+        <div id="uploadProgressContainer">
+            <div class="mdui-progress">
+                <div class="mdui-progress-determinate" id="uploadProgressBar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <p id="statusMessage" class="mdui-text-color-theme"></p>
 
         <div id="resultArea" class="result-area">
             <p>图片链接:</p>
             <span id="resultUrl"></span>
-            <button id="copyButton">复制URL</button>
+            <button id="copyUrlButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
+                <i class="material-icons">content_copy</i>复制链接
+            </button>
         </div>
 
         <div class="yiyan-area">
-            <p id="yiyanContent" style="margin: 0;"></p>
-            <button id="refreshYiyanButton">刷新一言</button>
+            <p id="yiyanContent"></p>
+            <button id="refreshYiyanButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-grey">
+                <i class="material-icons">refresh</i>刷新一言
+            </button>
         </div>
 
         <div class="history-area">
-            <h2>上传历史</h2>
-            <ul id="historyList">
-                </ul>
+            <h2 class="mdui-text-color-theme">上传历史</h2>
+            <ul id="historyList" class="mdui-list"></ul>
+            <button id="clearHistoryButton" class="mdui-btn mdui-btn-raised mdui-ripple">
+                <i class="material-icons">delete_sweep</i>清空全部历史
+            </button>
         </div>
 
-        <div class="footer-contact">
-            <p>联系方式：<a href="mailto:jiayuxuan_2024@qq.com">jiayuxuan_2024@qq.com</a></p>
+        <div class="footer-contact mdui-text-color-grey-700">
+            <p>联系方式：<a href="mailto:jiayuxuan_2024@qq.com" class="mdui-text-color-blue">jiayuxuan_2024@qq.com</a></p>
             <p>本站仅供学习交流使用</p>
         </div>
     </div>
 
+    <div class="theme-toggle-button mdui-ripple" id="themeToggleButton">
+        <i class="material-icons">brightness_2</i>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/js/mdui.min.js"></script>
     <script>
+        // DOM Elements
+        const uploadArea = document.getElementById('uploadArea');
         const imageUpload = document.getElementById('imageUpload');
         const apiSelector = document.getElementById('apiSelector');
         const uploadButton = document.getElementById('uploadButton');
         const statusMessage = document.getElementById('statusMessage');
         const imagePreview = document.getElementById('imagePreview');
+        const progressContainer = document.getElementById('uploadProgressContainer');
+        const progressBar = document.getElementById('uploadProgressBar');
         const resultArea = document.getElementById('resultArea');
         const resultUrl = document.getElementById('resultUrl');
-        const copyButton = document.getElementById('copyButton');
+        const copyUrlButton = document.getElementById('copyUrlButton');
         const yiyanContent = document.getElementById('yiyanContent');
         const refreshYiyanButton = document.getElementById('refreshYiyanButton');
-
-        // --- 历史记录相关 ---
         const historyList = document.getElementById('historyList');
-        const localStorageKey = 'yunluo_image_upload_history';
-        const MAX_HISTORY_ITEMS = 10; // 最多保存10条记录
+        const clearHistoryButton = document.getElementById('clearHistoryButton');
+        const themeToggleButton = document.getElementById('themeToggleButton');
 
-        let selectedFile = null; // 用于存储选择的文件
-
+        // Constants
+        const localStorageKey = 'yunluo_image_upload_history_v2';
+        const MAX_HISTORY_ITEMS = 15;
+        const THEME_KEY = 'yunluo_theme_mode';
+        const MAX_FILE_SIZE_MB = 5;
         const API_ENDPOINTS = {
             main: 'https://api.xinyew.cn/api/360tc',
-            backup: 'https://api.xinyew.cn/api/jdtc'
+            backup: 'https://api.xinyew.cn/api/jdtc',
         };
 
-        // --- 函数定义 ---
+        let selectedFile = null;
 
-        // 加载历史记录
+        // --- Utility Functions ---
+        function showSnackbar(message) {
+            mdui.snackbar({ message, timeout: 2500, position: 'top' });
+        }
+
+        async function copyToClipboard(text, successMessage) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showSnackbar(successMessage);
+            } catch (err) {
+                console.error('无法复制:', err);
+                showSnackbar('复制失败，请手动操作');
+            }
+        }
+
+        // --- File Handling and Preview ---
+        function handleFileSelect(file) {
+            if (!file) return;
+
+            if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+                statusMessage.textContent = `图片超过 ${MAX_FILE_SIZE_MB}MB，请重新选择！`;
+                statusMessage.style.color = 'red';
+                selectedFile = null;
+                uploadButton.disabled = true;
+                imagePreview.style.display = 'none';
+                return;
+            }
+
+            selectedFile = file;
+            statusMessage.textContent = `已选择: ${selectedFile.name}`;
+            statusMessage.style.color = 'var(--theme-accent-color)';
+            uploadButton.disabled = false;
+
+            const reader = new FileReader();
+            reader.onload = e => {
+                imagePreview.src = e.target.result;
+                imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(selectedFile);
+            resultArea.style.display = 'none';
+        }
+
+        // --- History Management ---
         function loadHistory() {
             const history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
             renderHistory(history);
         }
 
-        // 渲染历史记录
         function renderHistory(history) {
-            historyList.innerHTML = ''; // 清空列表
+            historyList.innerHTML = '';
+            clearHistoryButton.style.display = history.length > 0 ? 'flex' : 'none';
+
             if (history.length === 0) {
-                historyList.innerHTML = '<li style="text-align: center; color: #888;">暂无上传记录</li>';
+                historyList.innerHTML = '<li class="mdui-list-item mdui-text-color-grey-600" style="text-align: center; justify-content: center;">暂无上传记录</li>';
                 return;
             }
+
             history.forEach(item => {
                 const li = document.createElement('li');
-                li.className = 'history-item';
+                li.className = 'history-item mdui-ripple';
                 li.innerHTML = `
-                    <span title="点击复制" data-url="${item.url}">${item.name}</span>
-                    <button class="copy-icon">复制</button>
-                    <button class="delete-button">删除</button>
+                    <img src="${item.url}" alt="thumbnail" class="history-item-thumb" loading="lazy">
+                    <div class="history-item-info" data-url="${item.url}">
+                        <span>${item.name}</span>
+                    </div>
+                    <button class="delete-button mdui-btn mdui-btn-icon mdui-color-red-accent" data-url="${item.url}" data-name="${item.name}">
+                        <i class="material-icons">delete</i>
+                    </button>
                 `;
                 historyList.appendChild(li);
             });
         }
 
-        // 添加历史记录
         function addHistoryItem(name, url) {
             let history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
-            // 检查是否已存在相同的URL，如果存在则不重复添加，或者更新信息
-            const existingIndex = history.findIndex(item => item.url === url);
-            if (existingIndex !== -1) {
-                // 如果已存在，可以更新文件名或时间戳，这里简单替换
-                history[existingIndex] = { name, url, timestamp: Date.now() };
-            } else {
-                history.unshift({ name, url, timestamp: Date.now() }); // 添加到最前面
-            }
-
-            // 限制历史记录数量
+            history = history.filter(item => item.url !== url);
+            history.unshift({ name, url, timestamp: Date.now() });
             if (history.length > MAX_HISTORY_ITEMS) {
                 history = history.slice(0, MAX_HISTORY_ITEMS);
             }
-
             localStorage.setItem(localStorageKey, JSON.stringify(history));
-            loadHistory(); // 重新加载并渲染
+            loadHistory();
         }
 
-        // 删除单条历史记录
         function deleteHistoryItem(urlToDelete) {
             let history = JSON.parse(localStorage.getItem(localStorageKey)) || [];
             history = history.filter(item => item.url !== urlToDelete);
             localStorage.setItem(localStorageKey, JSON.stringify(history));
-            loadHistory(); // 重新加载并渲染
+            loadHistory();
+            showSnackbar('该条历史记录已删除');
         }
 
-        // 复制历史记录中的链接
-        function copyHistoryUrl(url) {
-            navigator.clipboard.writeText(url).then(() => {
-                alert('图片链接已复制到剪贴板！');
-            }).catch(err => {
-                console.error('无法复制到剪贴板:', err);
-                alert('复制失败，请手动复制。');
+        function clearAllHistory() {
+            mdui.dialog({
+                title: '确认清空',
+                content: '确定要清空所有上传历史记录吗？此操作不可撤销。',
+                buttons: [
+                    { text: '取消' },
+                    {
+                        text: '确定',
+                        onClick: () => {
+                            localStorage.removeItem(localStorageKey);
+                            loadHistory();
+                            showSnackbar('所有历史记录已清空');
+                        }
+                    }
+                ]
             });
         }
 
-        // --- 事件监听 ---
-
-        // 监听文件选择框的变化
-        imageUpload.addEventListener('change', (event) => {
-            selectedFile = event.target.files[0];
-            if (selectedFile) {
-                statusMessage.textContent = `已选择文件: ${selectedFile.name}`;
-                statusMessage.className = ''; // 清除之前的状态样式
-
-                // 显示图片预览
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
-                };
-                reader.readAsDataURL(selectedFile);
-
-                // 检查文件大小
-                const MAX_FILE_SIZE_MB = 5;
-                if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) { // 5MB 限制
-                    statusMessage.textContent = `警告：图片大小超过${MAX_FILE_SIZE_MB}MB限制，无法上传！`;
-                    statusMessage.className = 'error-message';
-                    uploadButton.disabled = true; // 禁用上传按钮
-                    selectedFile = null; // 清除文件，防止误操作
-                    imagePreview.style.display = 'none'; // 隐藏预览
-                } else {
-                    uploadButton.disabled = false; // 启用上传按钮
-                }
-            } else {
-                statusMessage.textContent = '请选择图片。';
-                statusMessage.className = '';
-                uploadButton.disabled = true;
-                imagePreview.style.display = 'none';
-            }
-            // 隐藏结果区域
-            resultArea.style.display = 'none';
-        });
-
-        // 监听上传按钮点击事件
-        uploadButton.addEventListener('click', async () => {
+        // --- API Calls ---
+        function uploadFile() {
             if (!selectedFile) {
-                statusMessage.textContent = '请先选择图片文件！';
-                statusMessage.className = 'error-message';
+                showSnackbar('请先选择一个图片文件！');
                 return;
             }
 
-            // 再次检查文件大小，以防万一
-            const MAX_FILE_SIZE_MB = 5;
-            if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-                statusMessage.textContent = `图片大小超过${MAX_FILE_SIZE_MB}MB限制，无法上传！`;
-                statusMessage.className = 'error-message';
-                return;
-            }
-
-            statusMessage.textContent = '图片上传中...';
-            statusMessage.className = 'loading-message';
-            uploadButton.disabled = true; // 上传中禁用按钮
-            resultArea.style.display = 'none'; // 隐藏结果区域
+            statusMessage.textContent = '准备上传...';
+            statusMessage.style.color = 'var(--theme-accent-color)';
+            uploadButton.disabled = true;
+            resultArea.style.display = 'none';
+            progressContainer.style.display = 'block';
+            progressBar.style.width = '0%';
 
             const formData = new FormData();
-            formData.append('file', selectedFile); // 字段名必须是 'file'
+            formData.append('file', selectedFile);
 
-            const selectedApi = apiSelector.value;
-            const apiUrl = API_ENDPOINTS[selectedApi];
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', API_ENDPOINTS[apiSelector.value], true);
 
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    body: formData
-                });
+            xhr.upload.onprogress = e => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    progressBar.style.width = percentComplete + '%';
+                    statusMessage.textContent = `上传中... ${Math.round(percentComplete)}%`;
+                }
+            };
 
-                // 检查响应是否成功 (HTTP 状态码 2xx)
-                if (!response.ok) {
-                    let errorDetails = `HTTP 错误! 状态: ${response.status}`;
+            xhr.onload = () => {
+                uploadButton.disabled = false;
+                progressContainer.style.display = 'none';
+
+                if (xhr.status >= 200 && xhr.status < 300) {
                     try {
-                        const errorData = await response.json();
-                        errorDetails += `, 详情: ${errorData.message || errorData.error || JSON.stringify(errorData)}`;
-                    } catch (jsonError) {
-                        // 如果响应不是JSON，或者JSON解析失败
-                        errorDetails += `, 响应体无法解析为JSON。`;
+                        const data = JSON.parse(xhr.responseText);
+                        if (data.errno === 0 && data.data.url) {
+                            statusMessage.textContent = '上传成功！';
+                            statusMessage.style.color = '#4CAF50';
+                            const url = data.data.url;
+                            resultUrl.textContent = url;
+                            resultArea.style.display = 'block';
+                            addHistoryItem(selectedFile.name, url);
+                        } else {
+                            throw new Error(data.error || data.message || 'API返回错误');
+                        }
+                    } catch (e) {
+                        statusMessage.textContent = `上传失败: ${e.message}`;
+                        statusMessage.style.color = 'red';
                     }
-                    throw new Error(errorDetails);
-                }
-
-                // 尝试解析JSON响应
-                const data = await response.json();
-
-                // 根据API返回结构判断
-                if (data.errno === 0) {
-                    statusMessage.textContent = '上传成功！';
-                    statusMessage.className = 'success-message';
-                    const uploadedUrl = data.data.url;
-                    resultUrl.textContent = uploadedUrl;
-                    resultArea.style.display = 'block'; // 显示结果区域
-
-                    // 添加到历史记录
-                    addHistoryItem(selectedFile.name, uploadedUrl);
                 } else {
-                    // 主接口错误信息在 error 字段，备用接口在 message 字段
-                    const errorMessage = data.error || data.message || '未知错误';
-                    statusMessage.textContent = `上传失败: ${errorMessage}`;
-                    statusMessage.className = 'error-message';
-                    resultArea.style.display = 'none';
+                    statusMessage.textContent = `上传失败: HTTP ${xhr.status}错误`;
+                    statusMessage.style.color = 'red';
                 }
-            } catch (error) {
-                // 捕获网络错误、JSON解析错误或自定义的HTTP错误
-                statusMessage.textContent = `上传失败: ${error.message || '未知错误，请检查网络或稍后再试'}`;
-                statusMessage.className = 'error-message';
-                console.error('上传出错:', error);
-                resultArea.style.display = 'none';
-            } finally {
-                uploadButton.disabled = false; // 恢复上传按钮
-            }
-        });
+            };
 
-        // 监听复制按钮点击事件
-        copyButton.addEventListener('click', () => {
-            const urlToCopy = resultUrl.textContent;
-            if (urlToCopy) {
-                // 使用 Clipboard API 复制文本
-                navigator.clipboard.writeText(urlToCopy).then(() => {
-                    alert('图片链接已复制到剪贴板！');
-                }).catch(err => {
-                    console.error('无法复制到剪贴板:', err);
-                    alert('复制失败，请手动复制。');
-                });
-            }
-        });
+            xhr.onerror = () => {
+                uploadButton.disabled = false;
+                progressContainer.style.display = 'none';
+                statusMessage.textContent = '上传失败，请检查网络连接。';
+                statusMessage.style.color = 'red';
+            };
 
-        // 获取并显示一言
+            xhr.send(formData);
+        }
+
+        // --- FIXED fetchYiyan function ---
         async function fetchYiyan() {
-            const yiyanApiUrl = 'https://api.nnxv.cn/api/yiyan.php'; // 新的一言API地址
             try {
-                const response = await fetch(yiyanApiUrl);
-                
-                // 检查网络响应是否成功
+                const response = await fetch('https://img.8845.top/yiyan'); // Using a more stable API
                 if (!response.ok) {
-                    // 如果HTTP状态码不是2xx，则抛出错误
-                    throw new Error(`HTTP 错误! 状态: ${response.status}`);
+                    throw new Error(`网络响应错误，状态码: ${response.status}`);
                 }
-                
-                // 尝试解析JSON
-                const data = await response.json(); 
-
-                // 检查返回的JSON中是否有content字段
-                // 优化：使用可选链操作符?.来安全访问属性
-                if (data?.content) { 
+                const data = await response.json();
+                if (data && data.content) {
                     yiyanContent.textContent = data.content;
                 } else {
-                    // 如果data不是对象，或者没有content字段
-                    yiyanContent.textContent = '未能获取一言，API返回数据格式不正确。';
-                    console.error('一言API返回数据格式不正确或缺少content字段:', data);
+                    throw new Error('API返回数据格式不正确');
                 }
             } catch (error) {
-                // 捕获网络错误、JSON解析错误或自定义的HTTP错误
-                yiyanContent.textContent = `未能获取一言，请稍后再试 (${error.message || '未知错误'})。`;
                 console.error('获取一言失败:', error);
+                yiyanContent.textContent = `一言获取失败: ${error.message || '未知错误'}`;
             }
         }
 
-        // 监听刷新一言按钮点击事件
-        refreshYiyanButton.addEventListener('click', fetchYiyan);
+        // --- Theme Management ---
+        function applyTheme(mode) {
+            const body = document.body;
+            const toggleIcon = themeToggleButton.querySelector('.material-icons');
+            if (mode === 'dark') {
+                body.classList.add('dark-mode');
+                toggleIcon.textContent = 'wb_sunny';
+            } else {
+                body.classList.remove('dark-mode');
+                toggleIcon.textContent = 'brightness_2';
+            }
+            localStorage.setItem(THEME_KEY, mode);
+        }
 
-        // --- 初始化 ---
-        // 页面加载完成后获取一言并加载历史记录
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem(THEME_KEY) || 'light';
+            applyTheme(currentTheme === 'light' ? 'dark' : 'light');
+        }
+
+        // --- Event Listeners ---
+        function setupEventListeners() {
+            imageUpload.addEventListener('change', e => handleFileSelect(e.target.files[0]));
+            uploadButton.addEventListener('click', uploadFile);
+            refreshYiyanButton.addEventListener('click', fetchYiyan);
+            clearHistoryButton.addEventListener('click', clearAllHistory);
+            themeToggleButton.addEventListener('click', toggleTheme);
+            
+            copyUrlButton.addEventListener('click', () => {
+                const textToCopy = resultUrl.textContent;
+                if (textToCopy) {
+                    copyToClipboard(textToCopy, '图片URL已复制！');
+                }
+            });
+
+            // Drag and Drop listeners
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('dragover'), false);
+            });
+            uploadArea.addEventListener('drop', e => handleFileSelect(e.dataTransfer.files[0]));
+
+            // Delegated event listeners for history items
+            historyList.addEventListener('click', e => {
+                const historyItem = e.target.closest('.history-item');
+                if (!historyItem) return;
+
+                const deleteBtn = e.target.closest('.delete-button');
+                if (deleteBtn) {
+                    const url = deleteBtn.dataset.url;
+                    const name = deleteBtn.dataset.name;
+                    mdui.dialog({
+                        title: '确认删除',
+                        content: `确定要删除 "${name}" 这条历史记录吗？`,
+                        buttons: [{ text: '取消' }, { text: '确定', onClick: () => deleteHistoryItem(url) }]
+                    });
+                } else {
+                    const url = historyItem.querySelector('.history-item-info').dataset.url;
+                    copyToClipboard(url, '历史图片链接已复制！');
+                }
+            });
+        }
+
+
+        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            applyTheme(savedTheme || 'light');
             fetchYiyan();
             loadHistory();
-        });
-
-        // 为历史记录列表添加事件委托
-        historyList.addEventListener('click', (event) => {
-            const target = event.target;
-            const historyItem = target.closest('.history-item');
-
-            if (!historyItem) return; // 如果点击的不是历史记录项的子元素，则不处理
-
-            const url = historyItem.querySelector('span').dataset.url;
-
-            if (target.classList.contains('copy-icon')) {
-                copyHistoryUrl(url);
-            } else if (target.classList.contains('delete-button')) {
-                if (confirm('确定要删除这条历史记录吗？')) {
-                    deleteHistoryItem(url);
-                }
-            } else if (target.tagName === 'SPAN') { // 点击文件名区域也复制
-                 copyHistoryUrl(url);
-            }
+            setupEventListeners();
         });
     </script>
 </body>
