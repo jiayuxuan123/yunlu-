@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>云落图床</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://fonts.proxy.ustclug.org/icon?family=Material+Icons"> 
     <style>
         :root {
             --theme-accent-color: #3f51b5;
@@ -238,6 +238,14 @@
 
         .footer-contact { font-size: 12px; color: #999; }
         .footer-contact a { color: #007bff; text-decoration: none; }
+        .footer-contact #visitsCounter {
+            margin-top: 15px; /* 添加一些间距 */
+            max-width: 150px; /* 限制宽度 */
+            display: block; /* 居中显示 */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
 
         .theme-toggle-button { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: var(--theme-accent-color); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1000; }
         .theme-toggle-button:hover { background-color: #303f9f; }
@@ -290,7 +298,7 @@
             </label>
         </div>
         <input type="file" id="imageUpload" accept="image/*">
-        <p class="upload-tip mdui-text-color-grey-600">主接口不明，京东图床单张图片限制 5MB，PicGo图床单张 25MB，均无压缩</p>
+        <p class="upload-tip mdui-text-color-grey-600">主接口和京东图床单张图片限制 5MB，PicGo图床单张 25MB，均无压缩</p>
 
         <img id="imagePreview" src="" alt="图片预览" style="display: none;">
 
@@ -332,6 +340,7 @@
         <div class="footer-contact mdui-text-color-grey-700">
             <p>联系方式：<a href="mailto:jiayuxuan_2024@qq.com" class="mdui-text-color-blue">jiayuxuan_2024@qq.com</a></p>
             <p>本站仅供学习交流使用</p>
+            <img id="visitsCounter" src="https://api.yyy001.com/api/Visits?name=yunluo_picgo_pro" alt="访问量统计">
         </div>
     </div>
 
@@ -515,11 +524,23 @@
             const formData = new FormData();
             const selectedApi = apiSelector.value;
 
-            // 根据API选择不同的文件参数名
+            // 获取原始文件名和扩展名
+            const originalFileName = selectedFile.name;
+            const fileExtension = originalFileName.split('.').pop();
+            const fileNameWithoutExt = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
+            
+            let uploadFileName = originalFileName;
+
+            // 根据API选择不同的文件参数名，并确保文件被正确添加
             if (selectedApi === 'picgo') {
-                formData.append('source', selectedFile);
+                // 为PicGo/Chevereto生成唯一的文件名以避免重复上传错误
+                const timestamp = new Date().getTime();
+                // 推荐的唯一文件名格式：原始文件名_时间戳.扩展名
+                uploadFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`; 
+                formData.append('source', selectedFile, uploadFileName); 
             } else {
-                formData.append('file', selectedFile);
+                // 对于其他API，使用原始文件名
+                formData.append('file', selectedFile, uploadFileName);
             }
 
             const xhr = new XMLHttpRequest();
@@ -555,14 +576,16 @@
                                 success = true;
                                 uploadedUrl = data.image.url;
                             } else {
-                                errorMessage = data.error?.message || 'PicGo API 返回错误';
+                                errorMessage = data.error?.message || `PicGo API 返回错误: ${JSON.stringify(data)}`;
+                                console.error('PicGo API 响应错误:', data); // 打印详细错误
                             }
                         } else { // 原有的API逻辑
                             if (data.errno === 0 && data.data.url) {
                                 success = true;
                                 uploadedUrl = data.data.url;
                             } else {
-                                errorMessage = data.error || data.message || 'API 返回错误';
+                                errorMessage = data.error || data.message || `API 返回错误: ${JSON.stringify(data)}`;
+                                console.error('通用 API 响应错误:', data); // 打印详细错误
                             }
                         }
                         
@@ -571,7 +594,7 @@
                             statusMessage.style.color = '#4CAF50';
                             resultUrl.textContent = uploadedUrl;
                             resultArea.style.display = 'block';
-                            addHistoryItem(selectedFile.name, uploadedUrl);
+                            addHistoryItem(originalFileName, uploadedUrl); // 历史记录仍保存原始文件名
                         } else {
                            throw new Error(errorMessage);
                         }
@@ -579,10 +602,12 @@
                     } catch (e) {
                         statusMessage.textContent = `上传失败: ${e.message}`;
                         statusMessage.style.color = 'red';
+                        console.error('JSON 解析或处理错误:', e); // 打印解析错误
                     }
                 } else {
-                    statusMessage.textContent = `上传失败: HTTP ${xhr.status} 错误`;
+                    statusMessage.textContent = `上传失败: HTTP ${xhr.status} 错误 (${xhr.statusText || '未知错误'})`;
                     statusMessage.style.color = 'red';
+                    console.error(`HTTP 错误: ${xhr.status}`, xhr.responseText); // 打印HTTP错误详情
                 }
             };
 
@@ -591,6 +616,7 @@
                 progressContainer.style.display = 'none';
                 statusMessage.textContent = '上传失败，请检查网络连接。';
                 statusMessage.style.color = 'red';
+                console.error('网络请求错误。');
             };
 
             xhr.send(formData);
