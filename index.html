@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>云落图床</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"> 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <style>
         :root {
             --theme-accent-color: #3f51b5;
@@ -285,10 +285,11 @@
             <select id="apiSelector" class="mdui-select" mdui-select>
                 <option value="main">主接口 (360图床)</option>
                 <option value="backup">备用接口 (京东图床)</option>
+                <option value="sogou">搜狗图床 (需meta头)</option>
                 <option value="picgo">PicGo图床 (Chevereto)</option>
             </select>
         </div>
-        <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换，PicGo图床网页版无法使用</p>
+        <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换</p>
 
         <div id="uploadArea" class="upload-area">
             <i class="material-icons upload-area-icon">cloud_upload</i>
@@ -298,7 +299,7 @@
             </label>
         </div>
         <input type="file" id="imageUpload" accept="image/*">
-        <p class="upload-tip mdui-text-color-grey-600">主接口和京东图床单张图片限制 5MB，PicGo图床单张 25MB，均无压缩</p>
+        <p class="upload-tip mdui-text-color-grey-600">主接口、京东图床、搜狗图床单张图片限制 5MB，PicGo图床单张 25MB，均无压缩</p>
 
         <img id="imagePreview" src="" alt="图片预览" style="display: none;">
 
@@ -373,14 +374,15 @@
         const localStorageKey = 'yunluo_image_upload_history_v2';
         const MAX_HISTORY_ITEMS = 15;
         const THEME_KEY = 'yunluo_theme_mode';
-        
+
         // 定义不同API的最大文件大小
         const MAX_FILE_SIZE = {
             main: 5 * 1024 * 1024,   // 5MB
             backup: 5 * 1024 * 1024, // 5MB
+            sogou: 5 * 1024 * 1024,  // 5MB
             picgo: 25 * 1024 * 1024  // 25MB
         };
-        
+
         // PicGo API密钥
         const PICGO_API_KEY = 'chv_SGDFr_6ff30575b071a65ce5aa95839e3080899543deb7d507ef74e55e46d13fc4307d01849df53b0519c3a4defaf26591f7d228b2a13184aa136f7417db379bd5ce35';
 
@@ -388,10 +390,12 @@
         const API_ENDPOINTS = {
             main: 'https://api.xinyew.cn/api/360tc',
             backup: 'https://api.xinyew.cn/api/jdtc',
+            sogou: 'https://api.xinyew.cn/api/sogotc', // 新增搜狗图床接口
             picgo: 'https://www.picgo.net/api/1/upload'
         };
 
         let selectedFile = null;
+        let sogouMetaTag = null; // 用于存储搜狗图床的meta标签
 
         // --- Utility Functions ---
         function showSnackbar(message) {
@@ -405,6 +409,25 @@
             } catch (err) {
                 console.error('无法复制:', err);
                 showSnackbar('复制失败，请手动操作');
+            }
+        }
+
+        function addSogouMetaTag(metaHtml) {
+            if (sogouMetaTag) {
+                sogouMetaTag.remove(); // 移除旧的meta标签
+            }
+            if (metaHtml) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = metaHtml;
+                sogouMetaTag = tempDiv.firstChild;
+                document.head.appendChild(sogouMetaTag);
+            }
+        }
+
+        function removeSogouMetaTag() {
+            if (sogouMetaTag) {
+                sogouMetaTag.remove();
+                sogouMetaTag = null;
             }
         }
 
@@ -528,7 +551,7 @@
             const originalFileName = selectedFile.name;
             const fileExtension = originalFileName.split('.').pop();
             const fileNameWithoutExt = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
-            
+
             let uploadFileName = originalFileName;
 
             // 根据API选择不同的文件参数名，并确保文件被正确添加
@@ -536,8 +559,8 @@
                 // 为PicGo/Chevereto生成唯一的文件名以避免重复上传错误
                 const timestamp = new Date().getTime();
                 // 推荐的唯一文件名格式：原始文件名_时间戳.扩展名
-                uploadFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`; 
-                formData.append('source', selectedFile, uploadFileName); 
+                uploadFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`;
+                formData.append('source', selectedFile, uploadFileName);
             } else {
                 // 对于其他API，使用原始文件名
                 formData.append('file', selectedFile, uploadFileName);
@@ -562,6 +585,7 @@
             xhr.onload = () => {
                 uploadButton.disabled = false;
                 progressContainer.style.display = 'none';
+                removeSogouMetaTag(); // 上传完成后移除可能存在的meta标签
 
                 if (xhr.status >= 200 && xhr.status < 300) {
                     try {
@@ -579,16 +603,29 @@
                                 errorMessage = data.error?.message || `PicGo API 返回错误: ${JSON.stringify(data)}`;
                                 console.error('PicGo API 响应错误:', data); // 打印详细错误
                             }
-                        } else { // 原有的API逻辑
+                        } else if (selectedApi === 'sogou') {
+                            if (data.errno === 0 && data.data && data.data.url) {
+                                success = true;
+                                uploadedUrl = data.data.url;
+                                // 添加搜狗图床所需的meta标签
+                                if (data.meta) {
+                                    addSogouMetaTag(data.meta);
+                                }
+                            } else {
+                                errorMessage = data.error || data.message || `搜狗图床 API 返回错误: ${JSON.stringify(data)}`;
+                                console.error('搜狗图床 API 响应错误:', data);
+                            }
+                        }
+                        else { // 原有的API逻辑 (360图床, 京东图床)
                             if (data.errno === 0 && data.data.url) {
                                 success = true;
                                 uploadedUrl = data.data.url;
                             } else {
-                                errorMessage = data.error || data.message || `API 返回错误: ${JSON.stringify(data)}`;
+                                errorMessage = data.error || data.message || `通用 API 返回错误: ${JSON.stringify(data)}`;
                                 console.error('通用 API 响应错误:', data); // 打印详细错误
                             }
                         }
-                        
+
                         if (success) {
                             statusMessage.textContent = '上传成功！';
                             statusMessage.style.color = '#4CAF50';
@@ -617,6 +654,7 @@
                 statusMessage.textContent = '上传失败，请检查网络连接。';
                 statusMessage.style.color = 'red';
                 console.error('网络请求错误。');
+                removeSogouMetaTag(); // 移除可能存在的meta标签
             };
 
             xhr.send(formData);
@@ -666,7 +704,7 @@
             refreshYiyanButton.addEventListener('click', fetchYiyan);
             clearHistoryButton.addEventListener('click', clearAllHistory);
             themeToggleButton.addEventListener('click', toggleTheme);
-            
+
             copyUrlButton.addEventListener('click', () => {
                 const textToCopy = resultUrl.textContent;
                 if (textToCopy) {
@@ -711,6 +749,7 @@
                 if (selectedFile) { // 如果已经选择了文件，重新验证大小
                     handleFileSelect(selectedFile);
                 }
+                removeSogouMetaTag(); // 切换API时移除搜狗图床的meta标签
             });
         }
 
