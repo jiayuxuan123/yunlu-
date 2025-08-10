@@ -6,6 +6,8 @@
     <title>云落图床</title>
     <!-- 使用 jsDelivr 国内镜像加载 MDUI -->
     <link rel="stylesheet" href="https://cdn.jsdmirror.com/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
+    <!-- 备用 CDN：阿里云 -->
+    <!-- <link rel="stylesheet" href="https://registry.npmmirror.com/mdui@1.0.1/files/dist/css/mdui.min.css"/> -->
     <!-- 使用 Font.im 加载 Material Icons -->
     <link rel="stylesheet" href="https://fonts.font.im/icon?family=Material+Icons">
     <style>
@@ -372,7 +374,7 @@
                 <option value="picgo">PicGo图床 (Chevereto)</option>
             </select>
         </div>
-        <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换</p>
+        <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换或使用代理</p>
         <div id="uploadArea" class="upload-area">
             <i class="material-icons upload-area-icon">cloud_upload</i>
             <p class="upload-tip">拖拽图片到这里，或</p>
@@ -423,6 +425,8 @@
     </div>
     <!-- 使用 jsDelivr 国内镜像加载 MDUI JS -->
     <script src="https://cdn.jsdmirror.com/npm/mdui@1.0.1/dist/js/mdui.min.js"></script>
+    <!-- 备用 CDN：阿里云 -->
+    <!-- <script src="https://registry.npmmirror.com/mdui@1.0.1/files/dist/js/mdui.min.js"></script> -->
     <script>
         // DOM Elements
         const uploadArea = document.getElementById('uploadArea');
@@ -614,8 +618,8 @@
 
             // 检查是否在 file:// 协议下运行
             if (window.location.protocol === 'file:') {
-                showSnackbar('当前运行在 file:// 协议下，可能无法上传。请部署到 HTTP/HTTPS 服务器！');
-                statusMessage.textContent = '请将页面部署到服务器环境以进行上传';
+                showSnackbar('当前运行在 file:// 协议下，无法上传。请部署到 HTTPS 服务器（如 GitHub Pages）！');
+                statusMessage.textContent = '请将页面部署到 HTTPS 服务器以进行上传';
                 statusMessage.style.color = 'red';
                 return;
             }
@@ -630,23 +634,17 @@
             const formData = new FormData();
             const selectedApi = apiSelector.value;
 
-            // 获取原始文件名和扩展名
+            // 获取原始文件名
             const originalFileName = selectedFile.name;
-            const fileExtension = originalFileName.split('.').pop();
-            const fileNameWithoutExt = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
 
-            let uploadFileName = originalFileName;
-
-            // 为 PicGo API 生成唯一的文件名
+            // 为 PicGo API 使用原始文件名
             if (selectedApi === 'picgo') {
-                const timestamp = new Date().getTime();
-                uploadFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`;
-                formData.append('source', selectedFile, uploadFileName);
+                formData.append('source', selectedFile, originalFileName);
             } else {
-                formData.append('file', selectedFile, uploadFileName);
+                formData.append('file', selectedFile, originalFileName);
             }
 
-            // 调试：检查 FormData 是否包含文件
+            // 调试：检查 FormData 内容
             console.log('FormData 内容：', [...formData.entries()]);
 
             const xhr = new XMLHttpRequest();
@@ -655,7 +653,7 @@
             // 为 PicGo API 添加授权头
             if (selectedApi === 'picgo') {
                 xhr.setRequestHeader('X-API-Key', PICGO_API_KEY);
-                // 不手动设置 Content-Type，让浏览器自动处理
+                // 不设置 Content-Type，让浏览器自动处理
             }
 
             xhr.upload.onprogress = e => {
@@ -738,7 +736,7 @@
             xhr.onerror = () => {
                 uploadButton.disabled = false;
                 progressContainer.style.display = 'none';
-                statusMessage.textContent = '上传失败，请检查网络连接或部署到服务器环境！';
+                statusMessage.textContent = '上传失败，请检查网络连接或尝试使用代理！';
                 statusMessage.style.color = 'red';
                 console.error('网络请求错误:', xhr.statusText);
                 removeSogouMetaTag();
@@ -853,8 +851,8 @@
 
             // 检查是否在 file:// 协议下运行
             if (window.location.protocol === 'file:') {
-                showSnackbar('警告：当前运行在 file:// 协议下，可能无法上传图片。请部署到 HTTP/HTTPS 服务器！');
-                statusMessage.textContent = '请将页面部署到服务器环境以进行上传';
+                showSnackbar('警告：当前运行在 file:// 协议下，无法上传图片。请部署到 HTTPS 服务器（如 GitHub Pages）！');
+                statusMessage.textContent = '请将页面部署到 HTTPS 服务器以进行上传';
                 statusMessage.style.color = 'orange';
             }
         });
