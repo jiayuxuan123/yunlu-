@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>云落图床</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!-- 使用 jsDelivr 国内镜像加载 MDUI -->
+    <link rel="stylesheet" href="https://cdn.jsdmirror.com/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
+    <!-- 使用 Font.im 加载 Material Icons -->
+    <link rel="stylesheet" href="https://fonts.font.im/icon?family=Material+Icons">
     <style>
         :root {
             --theme-accent-color: #3f51b5;
@@ -23,7 +25,6 @@
             box-sizing: border-box;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-
         .container {
             background-color: #fff;
             padding: 20px 15px;
@@ -37,18 +38,15 @@
             margin-bottom: 20px;
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
-
         h1 {
             color: var(--theme-accent-color);
             margin-bottom: 20px;
             font-size: 28px;
             font-weight: 700;
         }
-
         #imageUpload {
             display: none;
         }
-
         .upload-area {
             border: 2px dashed #ccc;
             border-radius: 10px;
@@ -69,7 +67,6 @@
         .upload-area.dragover .upload-area-icon {
             color: var(--theme-accent-color);
         }
-
         .mdui-btn {
             display: flex;
             align-items: center;
@@ -85,19 +82,16 @@
             max-width: 280px;
             margin: 10px auto;
         }
-
         .mdui-btn .material-icons {
             font-size: 22px;
             margin-right: 8px;
         }
-
         #uploadButton:disabled {
             background-color: #a5d8a9 !important;
             cursor: not-allowed;
             opacity: 0.8;
             box-shadow: none;
         }
-
         .upload-tip {
             font-size: 13px;
             color: #777;
@@ -106,7 +100,6 @@
             margin-bottom: 15px;
             text-align: center;
         }
-
         #uploadProgressContainer {
             margin: 15px 0;
             display: none;
@@ -117,8 +110,6 @@
         .mdui-progress-determinate::-webkit-progress-value {
             background-color: var(--theme-accent-color);
         }
-
-
         #statusMessage {
             margin-top: 15px;
             font-size: 15px;
@@ -126,7 +117,6 @@
             line-height: 1.5;
             font-weight: 500;
         }
-
         #imagePreview {
             max-width: 100%;
             max-height: 150px;
@@ -136,7 +126,6 @@
             display: block;
             object-fit: contain;
         }
-
         .result-area {
             margin-top: 25px;
             background-color: #f5f5f5;
@@ -170,8 +159,6 @@
             margin-left: auto;
             margin-right: auto;
         }
-
-
         .history-area {
             margin-top: 35px;
             border-top: 1px solid #eee;
@@ -216,7 +203,9 @@
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .history-item-info span { color: #333; }
+        .history-item-info span {
+            color: #333;
+        }
         .history-item .delete-button {
             height: 32px;
             width: 32px;
@@ -229,58 +218,152 @@
             margin: 0;
             font-size: 18px;
         }
-
-
-        .yiyan-area, .footer-contact { margin-top: 35px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; }
-        #yiyanContent { font-size: 15px; color: #666; font-style: italic; min-height: 20px; line-height: 1.6; margin: 0 0 15px 0;}
-        #refreshYiyanButton { height: 40px; line-height: 40px; padding: 0 18px; font-size: 14px; background-color: #616161; }
-        #clearHistoryButton { margin-top: 20px; height: 40px; line-height: 40px; font-size: 14px; background-color: #ef5350; color: white; }
-
-        .footer-contact { font-size: 12px; color: #999; }
-        .footer-contact a { color: #007bff; text-decoration: none; }
+        .yiyan-area, .footer-contact {
+            margin-top: 35px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            text-align: center;
+        }
+        #yiyanContent {
+            font-size: 15px;
+            color: #666;
+            font-style: italic;
+            min-height: 20px;
+            line-height: 1.6;
+            margin: 0 0 15px 0;
+        }
+        #refreshYiyanButton {
+            height: 40px;
+            line-height: 40px;
+            padding: 0 18px;
+            font-size: 14px;
+            background-color: #616161;
+        }
+        #clearHistoryButton {
+            margin-top: 20px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 14px;
+            background-color: #ef5350;
+            color: white;
+        }
+        .footer-contact {
+            font-size: 12px;
+            color: #999;
+        }
+        .footer-contact a {
+            color: #007bff;
+            text-decoration: none;
+        }
         .footer-contact #visitsCounter {
-            margin-top: 15px; /* 添加一些间距 */
-            max-width: 150px; /* 限制宽度 */
-            display: block; /* 居中显示 */
+            margin-top: 15px;
+            max-width: 150px;
+            display: block;
             margin-left: auto;
             margin-right: auto;
         }
-
-
-        .theme-toggle-button { position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background-color: var(--theme-accent-color); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); cursor: pointer; z-index: 1000; }
-        .theme-toggle-button:hover { background-color: #303f9f; }
-        .theme-toggle-button .material-icons { font-size: 28px; margin: 0; }
-
+        .theme-toggle-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--theme-accent-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .theme-toggle-button:hover {
+            background-color: #303f9f;
+        }
+        .theme-toggle-button .material-icons {
+            font-size: 28px;
+            margin: 0;
+        }
         /* --- 暗色模式 --- */
-        body.dark-mode { background-color: #212121; color: #eee; }
-        body.dark-mode .container { background-color: #303030; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4); }
-        body.dark-mode h1, body.dark-mode h2 { color: #eeeeee; }
-        body.dark-mode .upload-tip, body.dark-mode .yiyan-area #yiyanContent, body.dark-mode .footer-contact { color: #b0b0b0; }
-        body.dark-mode .upload-area { background-color: #2a2a2a; border-color: #555; }
-        body.dark-mode .upload-area.dragover { background-color: #3a3a3a; border-color: #90caf9;}
-        body.dark-mode .upload-area-icon { color: #666; }
-        body.dark-mode .upload-area.dragover .upload-area-icon { color: #90caf9; }
-        body.dark-mode .mdui-progress-determinate::-webkit-progress-bar { background-color: #555; }
-        body.dark-mode .result-area { background-color: #424242; border-color: #555; }
-        body.dark-mode .result-area p { color: #ccc; }
-        body.dark-mode #resultUrl { background-color: #3a3a3a; border-color: #555; color: #90caf9; }
-        body.dark-mode .history-item { background-color: #424242; }
-        body.dark-mode .history-item-thumb { background-color: #555; }
-        body.dark-mode .history-item-info span { color: #ddd; }
-        body.dark-mode .theme-toggle-button { background-color: #9e9e9e; }
-
+        body.dark-mode {
+            background-color: #212121;
+            color: #eee;
+        }
+        body.dark-mode .container {
+            background-color: #303030;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+        body.dark-mode h1, body.dark-mode h2 {
+            color: #eeeeee;
+        }
+        body.dark-mode .upload-tip, body.dark-mode .yiyan-area #yiyanContent, body.dark-mode .footer-contact {
+            color: #b0b0b0;
+        }
+        body.dark-mode .upload-area {
+            background-color: #2a2a2a;
+            border-color: #555;
+        }
+        body.dark-mode .upload-area.dragover {
+            background-color: #3a3a3a;
+            border-color: #90caf9;
+        }
+        body.dark-mode .upload-area-icon {
+            color: #666;
+        }
+        body.dark-mode .upload-area.dragover .upload-area-icon {
+            color: #90caf9;
+        }
+        body.dark-mode .mdui-progress-determinate::-webkit-progress-bar {
+            background-color: #555;
+        }
+        body.dark-mode .result-area {
+            background-color: #424242;
+            border-color: #555;
+        }
+        body.dark-mode .result-area p {
+            color: #ccc;
+        }
+        body.dark-mode #resultUrl {
+            background-color: #3a3a3a;
+            border-color: #555;
+            color: #90caf9;
+        }
+        body.dark-mode .history-item {
+            background-color: #424242;
+        }
+        body.dark-mode .history-item-thumb {
+            background-color: #555;
+        }
+        body.dark-mode .history-item-info span {
+            color: #ddd;
+        }
+        body.dark-mode .theme-toggle-button {
+            background-color: #9e9e9e;
+        }
         @media (max-width: 480px) {
-            .container { padding: 15px 10px; }
-            h1 { font-size: 24px; }
-            .mdui-btn { height: 44px; line-height: 44px; font-size: 15px; }
-            .history-item-thumb { width: 35px; height: 35px; margin-right: 10px;}
+            .container {
+                padding: 15px 10px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+            .mdui-btn {
+                height: 44px;
+                line-height: 44px;
+                font-size: 15px;
+            }
+            .history-item-thumb {
+                width: 35px;
+                height: 35px;
+                margin-right: 10px;
+            }
         }
     </style>
 </head>
 <body class="mdui-theme-primary-indigo mdui-theme-accent-blue">
     <div class="container mdui-shadow-2">
         <h1>云落图床</h1>
-
         <div class="mdui-select-container">
             <select id="apiSelector" class="mdui-select" mdui-select>
                 <option value="main">主接口 (360图床)</option>
@@ -290,7 +373,6 @@
             </select>
         </div>
         <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换</p>
-
         <div id="uploadArea" class="upload-area">
             <i class="material-icons upload-area-icon">cloud_upload</i>
             <p class="upload-tip">拖拽图片到这里，或</p>
@@ -300,21 +382,16 @@
         </div>
         <input type="file" id="imageUpload" accept="image/*">
         <p class="upload-tip mdui-text-color-grey-600">主接口、京东图床、搜狗图床单张图片限制 5MB，PicGo图床单张 25MB，均无压缩</p>
-
         <img id="imagePreview" src="" alt="图片预览" style="display: none;">
-
         <button id="uploadButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-green" disabled>
             <i class="material-icons">backup</i>开始上传
         </button>
-
         <div id="uploadProgressContainer">
             <div class="mdui-progress">
                 <div class="mdui-progress-determinate" id="uploadProgressBar" style="width: 0%;"></div>
             </div>
         </div>
-
         <p id="statusMessage" class="mdui-text-color-theme"></p>
-
         <div id="resultArea" class="result-area">
             <p>图片链接:</p>
             <span id="resultUrl"></span>
@@ -322,14 +399,12 @@
                 <i class="material-icons">content_copy</i>复制链接
             </button>
         </div>
-
         <div class="yiyan-area">
             <p id="yiyanContent"></p>
             <button id="refreshYiyanButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-grey">
                 <i class="material-icons">refresh</i>刷新一言
             </button>
         </div>
-
         <div class="history-area">
             <h2 class="mdui-text-color-theme">上传历史</h2>
             <ul id="historyList" class="mdui-list"></ul>
@@ -337,20 +412,17 @@
                 <i class="material-icons">delete_sweep</i>清空全部历史
             </button>
         </div>
-
         <div class="footer-contact mdui-text-color-grey-700">
             <p>联系方式：<a href="mailto:jiayuxuan_2024@qq.com" class="mdui-text-color-blue">jiayuxuan_2024@qq.com</a></p>
             <p>本站仅供学习交流使用</p>
             <img id="visitsCounter" src="https://api.yyy001.com/api/Visits?name=yunluo_picgo_pro" alt="访问量统计">
         </div>
     </div>
-
     <div class="theme-toggle-button mdui-ripple" id="themeToggleButton">
         <i class="material-icons">brightness_2</i>
     </div>
-
-
-    <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.1/dist/js/mdui.min.js"></script>
+    <!-- 使用 jsDelivr 国内镜像加载 MDUI JS -->
+    <script src="https://cdn.jsdmirror.com/npm/mdui@1.0.1/dist/js/mdui.min.js"></script>
     <script>
         // DOM Elements
         const uploadArea = document.getElementById('uploadArea');
@@ -384,18 +456,18 @@
         };
 
         // PicGo API密钥
-        const PICGO_API_KEY = 'chv_SGDFr_6ff30575b071a65ce5aa95839e3080899543deb7d507ef74e55e46d13fc4307d01849df53b0519c3a4defaf26591f7d228b2a13184aa136f7417db379bd5ce35';
+        const PICGO_API_KEY = 'chv_SwuvY_ad9f86db789385f6681aa0744810057e839b486592ffaaace674ca31669f51c1c2e1007d3936f7e69a2905c910e1e50c9b69a392480f0ff36da10da336a59865';
 
-        // 包含API端点
+        // API端点
         const API_ENDPOINTS = {
             main: 'https://api.xinyew.cn/api/360tc',
             backup: 'https://api.xinyew.cn/api/jdtc',
-            sogou: 'https://api.xinyew.cn/api/sogotc', // 新增搜狗图床接口
+            sogou: 'https://api.xinyew.cn/api/sogotc',
             picgo: 'https://www.picgo.net/api/1/upload'
         };
 
         let selectedFile = null;
-        let sogouMetaTag = null; // 用于存储搜狗图床的meta标签
+        let sogouMetaTag = null;
 
         // --- Utility Functions ---
         function showSnackbar(message) {
@@ -414,7 +486,7 @@
 
         function addSogouMetaTag(metaHtml) {
             if (sogouMetaTag) {
-                sogouMetaTag.remove(); // 移除旧的meta标签
+                sogouMetaTag.remove();
             }
             if (metaHtml) {
                 const tempDiv = document.createElement('div');
@@ -433,10 +505,13 @@
 
         // --- File Handling and Preview ---
         function handleFileSelect(file) {
-            if (!file) return;
+            if (!file) {
+                showSnackbar('未选择文件，请重新选择！');
+                return;
+            }
 
             const selectedApi = apiSelector.value;
-            const currentMaxFileSize = MAX_FILE_SIZE[selectedApi] || MAX_FILE_SIZE.main; // 默认为主接口限制
+            const currentMaxFileSize = MAX_FILE_SIZE[selectedApi] || MAX_FILE_SIZE.main;
 
             if (file.size > currentMaxFileSize) {
                 const maxMb = currentMaxFileSize / (1024 * 1024);
@@ -537,6 +612,14 @@
                 return;
             }
 
+            // 检查是否在 file:// 协议下运行
+            if (window.location.protocol === 'file:') {
+                showSnackbar('当前运行在 file:// 协议下，可能无法上传。请部署到 HTTP/HTTPS 服务器！');
+                statusMessage.textContent = '请将页面部署到服务器环境以进行上传';
+                statusMessage.style.color = 'red';
+                return;
+            }
+
             statusMessage.textContent = '准备上传...';
             statusMessage.style.color = 'var(--theme-accent-color)';
             uploadButton.disabled = true;
@@ -554,24 +637,25 @@
 
             let uploadFileName = originalFileName;
 
-            // 根据API选择不同的文件参数名，并确保文件被正确添加
+            // 为 PicGo API 生成唯一的文件名
             if (selectedApi === 'picgo') {
-                // 为PicGo/Chevereto生成唯一的文件名以避免重复上传错误
                 const timestamp = new Date().getTime();
-                // 推荐的唯一文件名格式：原始文件名_时间戳.扩展名
                 uploadFileName = `${fileNameWithoutExt}_${timestamp}.${fileExtension}`;
                 formData.append('source', selectedFile, uploadFileName);
             } else {
-                // 对于其他API，使用原始文件名
                 formData.append('file', selectedFile, uploadFileName);
             }
+
+            // 调试：检查 FormData 是否包含文件
+            console.log('FormData 内容：', [...formData.entries()]);
 
             const xhr = new XMLHttpRequest();
             xhr.open('POST', API_ENDPOINTS[selectedApi], true);
 
-            // 为PicGo API添加授权头
+            // 为 PicGo API 添加授权头
             if (selectedApi === 'picgo') {
                 xhr.setRequestHeader('X-API-Key', PICGO_API_KEY);
+                // 不手动设置 Content-Type，让浏览器自动处理
             }
 
             xhr.upload.onprogress = e => {
@@ -585,29 +669,27 @@
             xhr.onload = () => {
                 uploadButton.disabled = false;
                 progressContainer.style.display = 'none';
-                removeSogouMetaTag(); // 上传完成后移除可能存在的meta标签
+                removeSogouMetaTag();
 
                 if (xhr.status >= 200 && xhr.status < 300) {
                     try {
                         const data = JSON.parse(xhr.responseText);
                         let success = false;
                         let uploadedUrl = '';
-                        let errorMessage = 'API返回未知错误';
+                        let errorMessage = 'API 返回未知错误';
 
-                        // 根据API处理不同的成功响应格式
                         if (selectedApi === 'picgo') {
                             if (data.status_code === 200 && data.image && data.image.url) {
                                 success = true;
                                 uploadedUrl = data.image.url;
                             } else {
                                 errorMessage = data.error?.message || `PicGo API 返回错误: ${JSON.stringify(data)}`;
-                                console.error('PicGo API 响应错误:', data); // 打印详细错误
+                                console.error('PicGo API 响应错误:', data);
                             }
                         } else if (selectedApi === 'sogou') {
                             if (data.errno === 0 && data.data && data.data.url) {
                                 success = true;
                                 uploadedUrl = data.data.url;
-                                // 添加搜狗图床所需的meta标签
                                 if (data.meta) {
                                     addSogouMetaTag(data.meta);
                                 }
@@ -615,14 +697,13 @@
                                 errorMessage = data.error || data.message || `搜狗图床 API 返回错误: ${JSON.stringify(data)}`;
                                 console.error('搜狗图床 API 响应错误:', data);
                             }
-                        }
-                        else { // 原有的API逻辑 (360图床, 京东图床)
+                        } else {
                             if (data.errno === 0 && data.data.url) {
                                 success = true;
                                 uploadedUrl = data.data.url;
                             } else {
                                 errorMessage = data.error || data.message || `通用 API 返回错误: ${JSON.stringify(data)}`;
-                                console.error('通用 API 响应错误:', data); // 打印详细错误
+                                console.error('通用 API 响应错误:', data);
                             }
                         }
 
@@ -631,30 +712,36 @@
                             statusMessage.style.color = '#4CAF50';
                             resultUrl.textContent = uploadedUrl;
                             resultArea.style.display = 'block';
-                            addHistoryItem(originalFileName, uploadedUrl); // 历史记录仍保存原始文件名
+                            addHistoryItem(originalFileName, uploadedUrl);
                         } else {
-                           throw new Error(errorMessage);
+                            throw new Error(errorMessage);
                         }
-
                     } catch (e) {
                         statusMessage.textContent = `上传失败: ${e.message}`;
                         statusMessage.style.color = 'red';
-                        console.error('JSON 解析或处理错误:', e); // 打印解析错误
+                        console.error('JSON 解析或处理错误:', e);
                     }
                 } else {
-                    statusMessage.textContent = `上传失败: HTTP ${xhr.status} 错误 (${xhr.statusText || '未知错误'})`;
+                    let errorMessage = `上传失败: HTTP ${xhr.status} 错误 (${xhr.statusText || '未知错误'})`;
+                    try {
+                        const data = JSON.parse(xhr.responseText);
+                        errorMessage = `上传失败: ${data.error?.message || JSON.stringify(data)}`;
+                    } catch (e) {
+                        console.error('无法解析响应:', e);
+                    }
+                    statusMessage.textContent = errorMessage;
                     statusMessage.style.color = 'red';
-                    console.error(`HTTP 错误: ${xhr.status}`, xhr.responseText); // 打印HTTP错误详情
+                    console.error(`HTTP 错误: ${xhr.status}`, xhr.responseText);
                 }
             };
 
             xhr.onerror = () => {
                 uploadButton.disabled = false;
                 progressContainer.style.display = 'none';
-                statusMessage.textContent = '上传失败，请检查网络连接。';
+                statusMessage.textContent = '上传失败，请检查网络连接或部署到服务器环境！';
                 statusMessage.style.color = 'red';
-                console.error('网络请求错误。');
-                removeSogouMetaTag(); // 移除可能存在的meta标签
+                console.error('网络请求错误:', xhr.statusText);
+                removeSogouMetaTag();
             };
 
             xhr.send(formData);
@@ -670,7 +757,7 @@
                 if (data && data.content) {
                     yiyanContent.textContent = data.content;
                 } else {
-                    throw new Error('API返回数据格式不正确');
+                    throw new Error('API 返回数据格式不正确');
                 }
             } catch (error) {
                 console.error('获取一言失败:', error);
@@ -708,13 +795,15 @@
             copyUrlButton.addEventListener('click', () => {
                 const textToCopy = resultUrl.textContent;
                 if (textToCopy) {
-                    copyToClipboard(textToCopy, '图片URL已复制！');
+                    copyToClipboard(textToCopy, '图片 URL 已复制！');
                 }
             });
 
-            // Drag and Drop listeners
             ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, e => { e.preventDefault(); e.stopPropagation(); }, false);
+                uploadArea.addEventListener(eventName, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }, false);
             });
             ['dragenter', 'dragover'].forEach(eventName => {
                 uploadArea.addEventListener(eventName, () => uploadArea.classList.add('dragover'), false);
@@ -724,7 +813,6 @@
             });
             uploadArea.addEventListener('drop', e => handleFileSelect(e.dataTransfer.files[0]));
 
-            // Delegated event listeners for history items
             historyList.addEventListener('click', e => {
                 const historyItem = e.target.closest('.history-item');
                 if (!historyItem) return;
@@ -736,7 +824,10 @@
                     mdui.dialog({
                         title: '确认删除',
                         content: `确定要删除 "${name}" 这条历史记录吗？`,
-                        buttons: [{ text: '取消' }, { text: '确定', onClick: () => deleteHistoryItem(url) }]
+                        buttons: [
+                            { text: '取消' },
+                            { text: '确定', onClick: () => deleteHistoryItem(url) }
+                        ]
                     });
                 } else {
                     const url = historyItem.querySelector('.history-item-info').dataset.url;
@@ -744,15 +835,13 @@
                 }
             });
 
-            // 当接口选择变化时，重新检查文件大小限制
             apiSelector.addEventListener('change', () => {
-                if (selectedFile) { // 如果已经选择了文件，重新验证大小
+                if (selectedFile) {
                     handleFileSelect(selectedFile);
                 }
-                removeSogouMetaTag(); // 切换API时移除搜狗图床的meta标签
+                removeSogouMetaTag();
             });
         }
-
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -761,6 +850,13 @@
             fetchYiyan();
             loadHistory();
             setupEventListeners();
+
+            // 检查是否在 file:// 协议下运行
+            if (window.location.protocol === 'file:') {
+                showSnackbar('警告：当前运行在 file:// 协议下，可能无法上传图片。请部署到 HTTP/HTTPS 服务器！');
+                statusMessage.textContent = '请将页面部署到服务器环境以进行上传';
+                statusMessage.style.color = 'orange';
+            }
         });
     </script>
 </body>
