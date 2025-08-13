@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>云落图床</title>
-    <!-- 使用 jsDelivr 国内镜像加载 MDUI -->
     <link rel="stylesheet" href="https://cdn.jsdmirror.com/npm/mdui@1.0.1/dist/css/mdui.min.css"/>
-    <!-- 备用 CDN：阿里云 -->
-    <!-- <link rel="stylesheet" href="https://registry.npmmirror.com/mdui@1.0.1/files/dist/css/mdui.min.css"/> -->
-    <!-- 使用 Font.im 加载 Material Icons -->
     <link rel="stylesheet" href="https://fonts.font.im/icon?family=Material+Icons">
+    <script src="https://cdn.jsdmirror.com/npm/js-sha256@0.9.0/src/sha256.js"></script>
     <style>
         :root {
             --theme-accent-color: #3f51b5;
@@ -241,11 +238,13 @@
             font-size: 14px;
             background-color: #616161;
         }
-        #clearHistoryButton {
+        #clearHistoryButton, #openApiKeyConfigButton {
             margin-top: 20px;
             height: 40px;
             line-height: 40px;
             font-size: 14px;
+        }
+        #clearHistoryButton {
             background-color: #ef5350;
             color: white;
         }
@@ -286,6 +285,58 @@
         .theme-toggle-button .material-icons {
             font-size: 28px;
             margin: 0;
+        }
+        .api-key-config {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f1f3f5;
+            border-radius: 8px;
+            text-align: left;
+            transition: background-color 0.3s ease;
+        }
+        body.dark-mode .api-key-config {
+            background-color: #2a2a2a;
+        }
+        .api-key-config h3 {
+            font-size: 18px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--theme-accent-color);
+        }
+        .api-key-config .mdui-textfield-label {
+            color: #666;
+        }
+        body.dark-mode .api-key-config .mdui-textfield-label {
+            color: #aaa;
+        }
+        .api-key-config .mdui-btn {
+            width: auto;
+            min-width: 120px;
+            margin-top: 10px;
+            margin-right: 10px;
+        }
+        .api-key-guidance {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+        }
+        .api-key-guidance a {
+            color: var(--theme-accent-color);
+            text-decoration: none;
+        }
+        .api-key-guidance ul {
+            list-style: decimal;
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+        .api-key-guidance li {
+            margin-bottom: 5px;
+        }
+        .api-key-guidance strong {
+            color: #555;
+        }
+        body.dark-mode .api-key-guidance strong {
+            color: #ddd;
         }
         /* --- 暗色模式 --- */
         body.dark-mode {
@@ -371,19 +422,42 @@
                 <option value="main">主接口 (360图床)</option>
                 <option value="backup">备用接口 (京东图床)</option>
                 <option value="sogou">搜狗图床 (需meta头)</option>
-                <option value="picgo">PicGo图床 (Chevereto)</option>
+                <option value="pgopen">PGOpenAPI (需密钥)</option>
             </select>
         </div>
-        <p class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换或使用代理</p>
+        <p id="apiTip" class="upload-tip mdui-text-color-grey-600">接口可能不稳定，如遇上传失败可尝试切换或使用代理。</p>
+
+        <div id="apiKeyConfig" class="api-key-config" style="display: none;">
+            <h3>API 密钥设置</h3>
+            <div class="mdui-textfield mdui-textfield-floating-label">
+                <label class="mdui-textfield-label">您的 API 密钥</label>
+                <input id="apiKeyInput" class="mdui-textfield-input" type="password" />
+            </div>
+            <button id="saveKeyButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
+                <i class="material-icons">save</i>保存密钥
+            </button>
+            <button id="clearKeyButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-red-accent" style="display: none;">
+                <i class="material-icons">delete</i>清空密钥
+            </button>
+            <div class="api-key-guidance">
+                <p><strong>如何获取 API 密钥：</strong></p>
+                <ul>
+                    <li>访问 <a href="https://account.pgaot.com/user/set_usertoken" target="_blank">PGOpenAPI Token设置</a> 页面。</li>
+                    <li>登录后，您可以在页面上直接看到或生成您的 Token。</li>
+                    <li>将其复制粘贴到上方的输入框中即可。</li>
+                </ul>
+            </div>
+        </div>
+
         <div id="uploadArea" class="upload-area">
             <i class="material-icons upload-area-icon">cloud_upload</i>
             <p class="upload-tip">拖拽图片到这里，或</p>
             <label for="imageUpload" class="custom-file-upload mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
-                <i class="material-icons">add_photo_alternate</i>点击选择图片
+                <i class="material-icons">add_photo_alternate</i>点击选择文件
             </label>
         </div>
         <input type="file" id="imageUpload" accept="image/*">
-        <p class="upload-tip mdui-text-color-grey-600">主接口、京东图床、搜狗图床单张图片限制 5MB，PicGo图床单张 25MB，均无压缩</p>
+        <p id="fileSizeTip" class="upload-tip mdui-text-color-grey-600">文件支持类型：图片，单文件限制 5MB。</p>
         <img id="imagePreview" src="" alt="图片预览" style="display: none;">
         <button id="uploadButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-green" disabled>
             <i class="material-icons">backup</i>开始上传
@@ -395,7 +469,7 @@
         </div>
         <p id="statusMessage" class="mdui-text-color-theme"></p>
         <div id="resultArea" class="result-area">
-            <p>图片链接:</p>
+            <p>文件链接:</p>
             <span id="resultUrl"></span>
             <button id="copyUrlButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
                 <i class="material-icons">content_copy</i>复制链接
@@ -410,11 +484,14 @@
         <div class="history-area">
             <h2 class="mdui-text-color-theme">上传历史</h2>
             <ul id="historyList" class="mdui-list"></ul>
-            <button id="clearHistoryButton" class="mdui-btn mdui-btn-raised mdui-ripple">
+            <button id="clearHistoryButton" class="mdui-btn mdui-btn-raised mdui-ripple" style="display: none;">
                 <i class="material-icons">delete_sweep</i>清空全部历史
             </button>
         </div>
         <div class="footer-contact mdui-text-color-grey-700">
+             <button id="openApiKeyConfigButton" class="mdui-btn mdui-btn-raised mdui-ripple mdui-color-theme-accent">
+                <i class="material-icons">vpn_key</i>设置 API 密钥
+            </button>
             <p>联系方式：<a href="mailto:jiayuxuan_2024@qq.com" class="mdui-text-color-blue">jiayuxuan_2024@qq.com</a></p>
             <p>本站仅供学习交流使用</p>
             <img id="visitsCounter" src="https://api.yyy001.com/api/Visits?name=yunluo_picgo_pro" alt="访问量统计">
@@ -423,10 +500,7 @@
     <div class="theme-toggle-button mdui-ripple" id="themeToggleButton">
         <i class="material-icons">brightness_2</i>
     </div>
-    <!-- 使用 jsDelivr 国内镜像加载 MDUI JS -->
     <script src="https://cdn.jsdmirror.com/npm/mdui@1.0.1/dist/js/mdui.min.js"></script>
-    <!-- 备用 CDN：阿里云 -->
-    <!-- <script src="https://registry.npmmirror.com/mdui@1.0.1/files/dist/js/mdui.min.js"></script> -->
     <script>
         // DOM Elements
         const uploadArea = document.getElementById('uploadArea');
@@ -445,33 +519,58 @@
         const historyList = document.getElementById('historyList');
         const clearHistoryButton = document.getElementById('clearHistoryButton');
         const themeToggleButton = document.getElementById('themeToggleButton');
+        const apiKeyConfig = document.getElementById('apiKeyConfig');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const saveKeyButton = document.getElementById('saveKeyButton');
+        const clearKeyButton = document.getElementById('clearKeyButton');
+        const fileSizeTip = document.getElementById('fileSizeTip');
+        const apiTip = document.getElementById('apiTip');
+        const openApiKeyConfigButton = document.getElementById('openApiKeyConfigButton');
 
         // Constants
         const localStorageKey = 'yunluo_image_upload_history_v2';
+        const apiKeyStorageKey = 'yunluo_api_key'; // 不再需要哈希存储，直接保存原始Token
         const MAX_HISTORY_ITEMS = 15;
         const THEME_KEY = 'yunluo_theme_mode';
+        const PGOPEN_KY2_API_URL = 'https://api.pgaot.com/get_ky2';
+        const PGOPEN_UPLOAD_API_URL = 'https://api.pgaot.com/user/up_cat_file';
+        const PGOPEN_PATH_VALUE = 'bcx';
 
-        // 定义不同API的最大文件大小
-        const MAX_FILE_SIZE = {
-            main: 5 * 1024 * 1024,   // 5MB
-            backup: 5 * 1024 * 1024, // 5MB
-            sogou: 5 * 1024 * 1024,  // 5MB
-            picgo: 25 * 1024 * 1024  // 25MB
-        };
-
-        // PicGo API密钥
-        const PICGO_API_KEY = 'chv_SwuvY_ad9f86db789385f6681aa0744810057e839b486592ffaaace674ca31669f51c1c2e1007d3936f7e69a2905c910e1e50c9b69a392480f0ff36da10da336a59865';
-
-        // API端点
-        const API_ENDPOINTS = {
-            main: 'https://api.xinyew.cn/api/360tc',
-            backup: 'https://api.xinyew.cn/api/jdtc',
-            sogou: 'https://api.xinyew.cn/api/sogotc',
-            picgo: 'https://www.picgo.net/api/1/upload'
+        // API Configuration
+        const API_CONFIG = {
+            main: {
+                endpoint: 'https://api.xinyew.cn/api/360tc',
+                fileSize: 5 * 1024 * 1024,
+                fileName: 'file',
+                accept: 'image/*',
+                tip: '文件支持类型：图片，单文件限制 5MB。',
+            },
+            backup: {
+                endpoint: 'https://api.xinyew.cn/api/jdtc',
+                fileSize: 5 * 1024 * 1024,
+                fileName: 'file',
+                accept: 'image/*',
+                tip: '文件支持类型：图片，单文件限制 5MB。',
+            },
+            sogou: {
+                endpoint: 'https://api.xinyew.cn/api/sogotc',
+                fileSize: 5 * 1024 * 1024,
+                fileName: 'file',
+                accept: 'image/*',
+                tip: '文件支持类型：图片，单文件限制 5MB。',
+            },
+            pgopen: {
+                endpoint: PGOPEN_UPLOAD_API_URL,
+                fileSize: 25 * 1024 * 1024,
+                fileName: 'file',
+                accept: '*',
+                tip: '文件支持类型：图片、视频、音频、HTML 等，单文件限制 25MB。',
+            }
         };
 
         let selectedFile = null;
         let sogouMetaTag = null;
+        let pgopenToken = localStorage.getItem(apiKeyStorageKey);
 
         // --- Utility Functions ---
         function showSnackbar(message) {
@@ -507,6 +606,70 @@
             }
         }
 
+        function toggleUploadControls(enable) {
+            uploadArea.style.pointerEvents = enable ? 'auto' : 'none';
+            uploadArea.style.opacity = enable ? 1 : 0.6;
+            uploadButton.disabled = !enable || !selectedFile;
+        }
+
+        // --- API Key Management (for PGOpenAPI) ---
+        function saveApiKey() {
+            const apiKey = apiKeyInput.value.trim();
+            if (apiKey) {
+                pgopenToken = apiKey; // 直接保存原始Token
+                localStorage.setItem(apiKeyStorageKey, pgopenToken);
+                apiKeyInput.value = '';
+                apiKeyInput.setAttribute('disabled', 'disabled');
+                saveKeyButton.style.display = 'none';
+                clearKeyButton.style.display = 'inline-flex';
+                showSnackbar('API 密钥已保存！');
+                checkUploadState();
+                updateApiKeyConfigVisibility();
+            } else {
+                showSnackbar('请输入有效的 API 密钥！');
+            }
+        }
+
+        function clearApiKey() {
+            mdui.dialog({
+                title: '确认清空',
+                content: '确定要清空 API 密钥吗？',
+                buttons: [
+                    { text: '取消' },
+                    {
+                        text: '确定',
+                        onClick: () => {
+                            localStorage.removeItem(apiKeyStorageKey);
+                            pgopenToken = null;
+                            apiKeyInput.removeAttribute('disabled');
+                            apiKeyInput.value = '';
+                            saveKeyButton.style.display = 'inline-flex';
+                            clearKeyButton.style.display = 'none';
+                            showSnackbar('API 密钥已清空！');
+                            checkUploadState();
+                            updateApiKeyConfigVisibility();
+                        }
+                    }
+                ]
+            });
+        }
+        
+        function updateApiKeyConfigVisibility() {
+            const selectedApi = apiSelector.value;
+            if (selectedApi === 'pgopen') {
+                if (pgopenToken) {
+                    apiKeyConfig.style.display = 'none';
+                    openApiKeyConfigButton.style.display = 'flex';
+                } else {
+                    apiKeyConfig.style.display = 'block';
+                    openApiKeyConfigButton.style.display = 'none';
+                }
+            } else {
+                apiKeyConfig.style.display = 'none';
+                openApiKeyConfigButton.style.display = 'none';
+            }
+        }
+
         // --- File Handling and Preview ---
         function handleFileSelect(file) {
             if (!file) {
@@ -515,11 +678,22 @@
             }
 
             const selectedApi = apiSelector.value;
-            const currentMaxFileSize = MAX_FILE_SIZE[selectedApi] || MAX_FILE_SIZE.main;
+            const config = API_CONFIG[selectedApi];
 
-            if (file.size > currentMaxFileSize) {
-                const maxMb = currentMaxFileSize / (1024 * 1024);
-                statusMessage.textContent = `图片超过 ${maxMb}MB，请重新选择！`;
+            // 文件类型检查
+            if (config.accept !== '*' && !file.type.startsWith('image/')) {
+                statusMessage.textContent = '请选择图片文件！';
+                statusMessage.style.color = 'red';
+                selectedFile = null;
+                uploadButton.disabled = true;
+                imagePreview.style.display = 'none';
+                return;
+            }
+            
+            // 文件大小检查
+            if (file.size > config.fileSize) {
+                const maxMb = config.fileSize / (1024 * 1024);
+                statusMessage.textContent = `文件超过 ${maxMb}MB，请重新选择！`;
                 statusMessage.style.color = 'red';
                 selectedFile = null;
                 uploadButton.disabled = true;
@@ -532,12 +706,17 @@
             statusMessage.style.color = 'var(--theme-accent-color)';
             uploadButton.disabled = false;
 
-            const reader = new FileReader();
-            reader.onload = e => {
-                imagePreview.src = e.target.result;
-                imagePreview.style.display = 'block';
-            };
-            reader.readAsDataURL(selectedFile);
+            // 图片预览
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(selectedFile);
+            } else {
+                imagePreview.style.display = 'none';
+            }
             resultArea.style.display = 'none';
         }
 
@@ -559,8 +738,11 @@
             history.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'history-item mdui-ripple';
+                const isImage = item.name.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i);
+                const thumbHtml = isImage ? `<img src="${item.url}" alt="thumbnail" class="history-item-thumb" loading="lazy">` : `<div class="history-item-thumb mdui-color-grey-300 mdui-text-color-grey-800 mdui-center mdui-valign" style="line-height:1; font-size: 1.2em;"><i class="material-icons">insert_drive_file</i></div>`;
+
                 li.innerHTML = `
-                    <img src="${item.url}" alt="thumbnail" class="history-item-thumb" loading="lazy">
+                    ${thumbHtml}
                     <div class="history-item-info" data-url="${item.url}">
                         <span>${item.name}</span>
                     </div>
@@ -610,17 +792,18 @@
         }
 
         // --- API Calls ---
-        function uploadFile() {
+        async function uploadFile() {
             if (!selectedFile) {
-                showSnackbar('请先选择一个图片文件！');
+                showSnackbar('请先选择一个文件！');
                 return;
             }
+            
+            const selectedApi = apiSelector.value;
+            const config = API_CONFIG[selectedApi];
 
-            // 检查是否在 file:// 协议下运行
-            if (window.location.protocol === 'file:') {
-                showSnackbar('当前运行在 file:// 协议下，无法上传。请部署到 HTTPS 服务器（如 GitHub Pages）！');
-                statusMessage.textContent = '请将页面部署到 HTTPS 服务器以进行上传';
-                statusMessage.style.color = 'red';
+            // 检查 PGOpenAPI 密钥
+            if (selectedApi === 'pgopen' && !pgopenToken) {
+                showSnackbar('请先保存 PGOpenAPI 密钥！');
                 return;
             }
 
@@ -631,129 +814,155 @@
             progressContainer.style.display = 'block';
             progressBar.style.width = '0%';
 
-            const formData = new FormData();
-            const selectedApi = apiSelector.value;
+            try {
+                const formData = new FormData();
+                const originalFileName = selectedFile.name;
+                formData.append(config.fileName, selectedFile, originalFileName);
 
-            // 获取原始文件名
-            const originalFileName = selectedFile.name;
+                if (selectedApi === 'pgopen') {
+                    // PGOpenAPI 的特殊处理：先获取 ky2 令牌
+                    statusMessage.textContent = '正在获取认证令牌 (ky2)...';
+                    const ky2Response = await fetch(`${PGOPEN_KY2_API_URL}?token=${pgopenToken}`, {
+                        method: 'GET',
+                    });
 
-            // 为 PicGo API 使用原始文件名
-            if (selectedApi === 'picgo') {
-                formData.append('source', selectedFile, originalFileName);
-            } else {
-                formData.append('file', selectedFile, originalFileName);
-            }
-
-            // 调试：检查 FormData 内容
-            console.log('FormData 内容：', [...formData.entries()]);
-
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', API_ENDPOINTS[selectedApi], true);
-
-            // 为 PicGo API 添加授权头
-            if (selectedApi === 'picgo') {
-                xhr.setRequestHeader('X-API-Key', PICGO_API_KEY);
-                // 不设置 Content-Type，让浏览器自动处理
-            }
-
-            xhr.upload.onprogress = e => {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    progressBar.style.width = percentComplete + '%';
-                    statusMessage.textContent = `上传中... ${Math.round(percentComplete)}%`;
-                }
-            };
-
-            xhr.onload = () => {
-                uploadButton.disabled = false;
-                progressContainer.style.display = 'none';
-                removeSogouMetaTag();
-
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-                        let success = false;
-                        let uploadedUrl = '';
-                        let errorMessage = 'API 返回未知错误';
-
-                        if (selectedApi === 'picgo') {
-                            if (data.status_code === 200 && data.image && data.image.url) {
-                                success = true;
-                                uploadedUrl = data.image.url;
-                            } else {
-                                errorMessage = data.error?.message || `PicGo API 返回错误: ${JSON.stringify(data)}`;
-                                console.error('PicGo API 响应错误:', data);
-                            }
-                        } else if (selectedApi === 'sogou') {
-                            if (data.errno === 0 && data.data && data.data.url) {
-                                success = true;
-                                uploadedUrl = data.data.url;
-                                if (data.meta) {
-                                    addSogouMetaTag(data.meta);
-                                }
-                            } else {
-                                errorMessage = data.error || data.message || `搜狗图床 API 返回错误: ${JSON.stringify(data)}`;
-                                console.error('搜狗图床 API 响应错误:', data);
-                            }
-                        } else {
-                            if (data.errno === 0 && data.data.url) {
-                                success = true;
-                                uploadedUrl = data.data.url;
-                            } else {
-                                errorMessage = data.error || data.message || `通用 API 返回错误: ${JSON.stringify(data)}`;
-                                console.error('通用 API 响应错误:', data);
-                            }
-                        }
-
-                        if (success) {
-                            statusMessage.textContent = '上传成功！';
-                            statusMessage.style.color = '#4CAF50';
-                            resultUrl.textContent = uploadedUrl;
-                            resultArea.style.display = 'block';
-                            addHistoryItem(originalFileName, uploadedUrl);
-                        } else {
-                            throw new Error(errorMessage);
-                        }
-                    } catch (e) {
-                        statusMessage.textContent = `上传失败: ${e.message}`;
-                        statusMessage.style.color = 'red';
-                        console.error('JSON 解析或处理错误:', e);
+                    if (!ky2Response.ok) {
+                        const errorData = await ky2Response.text();
+                        throw new Error(`获取ky2失败: ${ky2Response.status} - ${errorData}`);
                     }
+                    const ky2Result = await ky2Response.json();
+                    if (ky2Result.code !== 200 || !ky2Result.ky2) {
+                         throw new Error(`获取ky2失败: ${ky2Result.msg || '未知错误'}`);
+                    }
+                    const ky2Token = ky2Result.ky2;
+
+                    statusMessage.textContent = '正在上传文件...';
+                    formData.append('path', PGOPEN_PATH_VALUE);
+
+                    const uploadResponse = await fetch(config.endpoint, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Authorization': `Bearer ${ky2Token}`,
+                        }
+                    });
+
+                    if (!uploadResponse.ok) {
+                        const errorData = await uploadResponse.json();
+                        throw new Error(`上传失败: ${errorData.msg || errorData.message || '未知错误'}`);
+                    }
+                    
+                    const result = await uploadResponse.json();
+                    if (result.code === 200 && result.url) {
+                        statusMessage.textContent = '上传成功！';
+                        statusMessage.style.color = '#4CAF50';
+                        resultUrl.textContent = result.url;
+                        resultArea.style.display = 'block';
+                        addHistoryItem(originalFileName, result.url);
+                    } else {
+                        throw new Error(`上传失败: ${result.msg || '未知错误'}`);
+                    }
+
                 } else {
-                    let errorMessage = `上传失败: HTTP ${xhr.status} 错误 (${xhr.statusText || '未知错误'})`;
-                    try {
-                        const data = JSON.parse(xhr.responseText);
-                        errorMessage = `上传失败: ${data.error?.message || JSON.stringify(data)}`;
-                    } catch (e) {
-                        console.error('无法解析响应:', e);
-                    }
-                    statusMessage.textContent = errorMessage;
-                    statusMessage.style.color = 'red';
-                    console.error(`HTTP 错误: ${xhr.status}`, xhr.responseText);
-                }
-            };
+                    // 其他 API 的通用处理
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', config.endpoint, true);
 
-            xhr.onerror = () => {
+                    xhr.upload.onprogress = e => {
+                        if (e.lengthComputable) {
+                            const percentComplete = (e.loaded / e.total) * 100;
+                            progressBar.style.width = percentComplete + '%';
+                            statusMessage.textContent = `上传中... ${Math.round(percentComplete)}%`;
+                        }
+                    };
+                    
+                    xhr.onload = () => {
+                        uploadButton.disabled = false;
+                        progressContainer.style.display = 'none';
+                        removeSogouMetaTag();
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                let success = false;
+                                let uploadedUrl = '';
+                                let errorMessage = 'API 返回未知错误';
+                                if (selectedApi === 'sogou') {
+                                    if (data.errno === 0 && data.data && data.data.url) {
+                                        success = true;
+                                        uploadedUrl = data.data.url;
+                                        if (data.meta) {
+                                            addSogouMetaTag(data.meta);
+                                        }
+                                    } else {
+                                        errorMessage = data.error || data.message || `搜狗图床 API 返回错误: ${JSON.stringify(data)}`;
+                                    }
+                                } else {
+                                    if (data.errno === 0 && data.data && data.data.url) {
+                                        success = true;
+                                        uploadedUrl = data.data.url;
+                                    } else {
+                                        errorMessage = data.error || data.message || `通用 API 返回错误: ${JSON.stringify(data)}`;
+                                    }
+                                }
+                                if (success) {
+                                    statusMessage.textContent = '上传成功！';
+                                    statusMessage.style.color = '#4CAF50';
+                                    resultUrl.textContent = uploadedUrl;
+                                    resultArea.style.display = 'block';
+                                    addHistoryItem(originalFileName, uploadedUrl);
+                                } else {
+                                    throw new Error(errorMessage);
+                                }
+                            } catch (e) {
+                                statusMessage.textContent = `上传失败: ${e.message}`;
+                                statusMessage.style.color = 'red';
+                                console.error('JSON 解析或处理错误:', e);
+                            }
+                        } else {
+                            let errorMessage = `上传失败: HTTP ${xhr.status} 错误 (${xhr.statusText || '未知错误'})`;
+                            try {
+                                const data = JSON.parse(xhr.responseText);
+                                errorMessage = `上传失败: ${data.msg || data.message || data.error?.message || JSON.stringify(data)}`;
+                            } catch (e) {
+                                console.error('无法解析响应:', e);
+                            }
+                            statusMessage.textContent = errorMessage;
+                            statusMessage.style.color = 'red';
+                            console.error(`HTTP 错误: ${xhr.status}`, xhr.responseText);
+                            removeSogouMetaTag();
+                        }
+                    };
+
+                    xhr.onerror = () => {
+                        uploadButton.disabled = false;
+                        progressContainer.style.display = 'none';
+                        statusMessage.textContent = '上传失败，请检查网络连接或尝试使用代理！';
+                        statusMessage.style.color = 'red';
+                        console.error('网络请求错误:', xhr.statusText);
+                        removeSogouMetaTag();
+                    };
+
+                    xhr.send(formData);
+                }
+            } catch (error) {
                 uploadButton.disabled = false;
                 progressContainer.style.display = 'none';
-                statusMessage.textContent = '上传失败，请检查网络连接或尝试使用代理！';
+                statusMessage.textContent = error.message;
                 statusMessage.style.color = 'red';
-                console.error('网络请求错误:', xhr.statusText);
-                removeSogouMetaTag();
-            };
-
-            xhr.send(formData);
+                console.error('上传过程中发生错误:', error);
+            }
         }
+
 
         async function fetchYiyan() {
             try {
-                const response = await fetch('https://img.8845.top/yiyan');
+                const response = await fetch('https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=i');
                 if (!response.ok) {
                     throw new Error(`网络响应错误，状态码: ${response.status}`);
                 }
                 const data = await response.json();
-                if (data && data.content) {
-                    yiyanContent.textContent = data.content;
+                if (data && data.hitokoto) {
+                    yiyanContent.textContent = data.hitokoto;
                 } else {
                     throw new Error('API 返回数据格式不正确');
                 }
@@ -781,8 +990,44 @@
             const currentTheme = localStorage.getItem(THEME_KEY) || 'light';
             applyTheme(currentTheme === 'light' ? 'dark' : 'light');
         }
+        
+        // Update UI based on API selection
+        function updateApiSelection() {
+            const selectedApi = apiSelector.value;
+            const config = API_CONFIG[selectedApi];
 
-        // --- Event Listeners ---
+            updateApiKeyConfigVisibility();
+            
+            fileSizeTip.textContent = config.tip;
+            imageUpload.setAttribute('accept', config.accept);
+            
+            checkUploadState();
+        }
+
+        // Check if upload button should be enabled
+        function checkUploadState() {
+            const selectedApi = apiSelector.value;
+            if (selectedApi === 'pgopen') {
+                if (pgopenToken) {
+                    toggleUploadControls(true);
+                    statusMessage.textContent = selectedFile ? `已选择: ${selectedFile.name}` : '已就绪，请选择文件上传。';
+                    statusMessage.style.color = 'var(--theme-accent-color)';
+                } else {
+                    toggleUploadControls(false);
+                    statusMessage.textContent = '请先输入 API 密钥！';
+                    statusMessage.style.color = 'red';
+                }
+            } else {
+                toggleUploadControls(true);
+                statusMessage.textContent = selectedFile ? `已选择: ${selectedFile.name}` : '已就绪，请选择文件上传。';
+                statusMessage.style.color = 'var(--theme-accent-color)';
+            }
+            if (!selectedFile) {
+                uploadButton.disabled = true;
+            }
+        }
+
+        // --- Event Listeners and Initialization ---
         function setupEventListeners() {
             imageUpload.addEventListener('change', e => handleFileSelect(e.target.files[0]));
             uploadButton.addEventListener('click', uploadFile);
@@ -790,10 +1035,32 @@
             clearHistoryButton.addEventListener('click', clearAllHistory);
             themeToggleButton.addEventListener('click', toggleTheme);
 
+            saveKeyButton.addEventListener('click', saveApiKey);
+            clearKeyButton.addEventListener('click', clearApiKey);
+            openApiKeyConfigButton.addEventListener('click', () => {
+                apiKeyConfig.style.display = 'block';
+                openApiKeyConfigButton.style.display = 'none';
+                if (pgopenToken) {
+                    // 为了安全，不显示完整的token，但可以通过已保存状态来判断
+                    apiKeyInput.value = '已保存'; 
+                    apiKeyInput.setAttribute('disabled', 'disabled');
+                    saveKeyButton.style.display = 'none';
+                    clearKeyButton.style.display = 'inline-flex';
+                }
+            });
+
+            apiSelector.addEventListener('change', () => {
+                updateApiSelection();
+                if (selectedFile) {
+                    handleFileSelect(selectedFile);
+                }
+                removeSogouMetaTag();
+            });
+
             copyUrlButton.addEventListener('click', () => {
                 const textToCopy = resultUrl.textContent;
                 if (textToCopy) {
-                    copyToClipboard(textToCopy, '图片 URL 已复制！');
+                    copyToClipboard(textToCopy, '链接已复制！');
                 }
             });
 
@@ -829,32 +1096,33 @@
                     });
                 } else {
                     const url = historyItem.querySelector('.history-item-info').dataset.url;
-                    copyToClipboard(url, '历史图片链接已复制！');
+                    copyToClipboard(url, '历史文件链接已复制！');
                 }
-            });
-
-            apiSelector.addEventListener('change', () => {
-                if (selectedFile) {
-                    handleFileSelect(selectedFile);
-                }
-                removeSogouMetaTag();
             });
         }
+        
+        function checkApiKeyStatus() {
+            if (pgopenToken) {
+                apiKeyInput.value = '已保存';
+                apiKeyInput.setAttribute('disabled', 'disabled');
+                saveKeyButton.style.display = 'none';
+                clearKeyButton.style.display = 'inline-flex';
+            } else {
+                apiKeyInput.removeAttribute('disabled');
+                apiKeyInput.value = '';
+                saveKeyButton.style.display = 'inline-flex';
+                clearKeyButton.style.display = 'none';
+            }
+        }
 
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem(THEME_KEY);
             applyTheme(savedTheme || 'light');
             fetchYiyan();
             loadHistory();
             setupEventListeners();
-
-            // 检查是否在 file:// 协议下运行
-            if (window.location.protocol === 'file:') {
-                showSnackbar('警告：当前运行在 file:// 协议下，无法上传图片。请部署到 HTTPS 服务器（如 GitHub Pages）！');
-                statusMessage.textContent = '请将页面部署到 HTTPS 服务器以进行上传';
-                statusMessage.style.color = 'orange';
-            }
+            checkApiKeyStatus();
+            updateApiSelection(); 
         });
     </script>
 </body>
