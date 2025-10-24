@@ -508,7 +508,7 @@
         const memorialBannerText = $('#memorialBannerText'); // 新增：悼念横幅文本元素
         const closeMemorialButton = $('#closeMemorialButton'); // 新增：关闭按钮
 
-        const CURRENT_APP_VERSION = 'v7.6'; // 版本号保持不变
+        const CURRENT_APP_VERSION = 'v7.7'; // **更新版本号以触发更新日志**
         const VERSION_KEY = 'yunluo_app_version';
         const localStorageKey = 'yunluo_image_upload_history_v3'; 
         const apiKeyStorageKey = 'yunluo_api_key';
@@ -535,6 +535,9 @@
 
         const API_OPTIONS = [ 
             { value: 'pgopen', name: 'PGOpenAPI 推荐', tip: '需配置API密钥。支持图片、视频、音频等，单文件限制 25MB。', isRecommended: true, endpoint: PGOPEN_UPLOAD_API_URL, fileSize: 25*1024*1024, fileName: 'file', accept: '*' }, 
+            // >>> 新增 中国邮政图床 (新野API) 接口配置 <<<
+            { value: 'psbctc', name: '中国邮政图床 (新野API)', tip: '支持图片，单文件限制 2MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/psbctc', fileSize: 2*1024*1024, fileName: 'file', accept: 'image/*' },
+            // >>> 新增接口结束 <<<
             { value: 'yanxuan', name: '网易严选图床', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/yanxuantc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
             { value: 'main', name: '主接口 (360图床)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/360tc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
             { value: 'backup', name: '备用接口 (京东图床)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/jdtc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
@@ -616,7 +619,8 @@
             updateResultAreaButtons(uploadedUrl, selectedFile);
         }
         function showApiKeyGuideDialog() { const content = `<div class="key-guide-step"><p><b>获取 PGOpenAPI 密钥的步骤：</b></p><ol><li>点击下方按钮或访问 <a href="${PGOPEN_KEY_GUIDE_URL}" target="_blank">PGOpenAPI 官网</a>。</li><li>在网站上注册或登录您的账号。</li><li>找到 <b>Token设置</b>。</li><li>复制您的密钥（通常是一串长字符）。</li><li>返回本页面，点击**“配置 PGOpenAPI 密钥”**，将密钥粘贴保存即可。</li></ol><p style="font-size: 13px; margin-top: 15px;">**注意：** PGOpenAPI 接口<b>需要密钥才能使用</b>，请务必申请并配置。</p></div>`; showDialog({ title: '如何获取 PGOpenAPI 密钥', content, buttons: [ { text: '知道了' }, { text: '前往官网', onClick: () => window.open(PGOPEN_KEY_GUIDE_URL, '_blank') } ], scrollable: true }); } // 增加 scrollable: true
-        function showApiSelectorDialog() { let listHtml = '<ul class="list">'; API_OPTIONS.forEach(opt => { const isChecked = opt.value === apiSelector.value; const badge = opt.isRecommended ? '<span class="recommended-badge">推荐</span>' : ''; listHtml += `<li class="list-item" data-value="${opt.value}"><div class="list-item-content">${opt.name} ${badge}</div><div class="list-item-icon"><i class="material-icons">radio_button_${isChecked ? 'checked' : 'unchecked'}</i></div></li>`; }); listHtml += '</ul>'; const { dialog } = showDialog({ title: '选择接口', content: listHtml, type: 'bottom-sheet' }); dialog.querySelectorAll('.list-item').forEach(item => { item.addEventListener('click', function() { const newVal = this.dataset.value; dialog.querySelectorAll('.material-icons').forEach(i => i.textContent = 'radio_button_unchecked'); this.querySelector('.material-icons').textContent = 'radio_button_checked'; setTimeout(() => { if (newVal !== apiSelector.value) { apiSelector.value = newVal; localStorage.setItem(API_PREFERENCE_KEY, newVal); selectedFile = null; imageUpload.value = ''; imagePreview.style.display = 'none'; uploadButton.disabled = true; statusMessage.textContent = '请选择新文件'; censorStatusElement.style.display = 'none'; } dialog.closest('.dialog-overlay')?.click(); }, 200); }); }); }
+        function showApiSelectorDialog() { let listHtml = '<ul class="list">'; API_OPTIONS.forEach(opt => { const isChecked = opt.value === apiSelector.value; const badge = opt.isRecommended ? '<span class="recommended-badge">推荐</span>' : ''; listHtml += `<li class="list-item" data-value="${opt.value}"><div class="list-item-content">${opt.name} ${badge}</div><div class="list-item-icon"><i class="material-icons">radio_button_${isChecked ? 'checked' : 'unchecked'}</i></div></li>`; }); listHtml += '</ul>'; const { dialog } = showDialog({ title: '选择接口', content: listHtml, type: 'bottom-sheet' }); dialog.querySelectorAll('.list-item').forEach(item => { item.addEventListener('click', function() { const newVal = this.dataset.value; dialog.querySelectorAll('.material-icons').forEach(i => i.textContent = 'radio_button_unchecked'); this.querySelector('.material-icons').textContent = 'radio_button_checked'; setTimeout(() => { if (newVal !== apiSelector.value) { apiSelector.value = newVal; localStorage.setItem(API_PREFERENCE_KEY, newVal); selectedFile = null; imageUpload.value = ''; imagePreview.style.display = 'none'; uploadButton.disabled = true; statusMessage.textContent = '请选择新文件'; censorStatusElement.style.display = 'none'; } dialog.closest('.dialog-overlay')?.click(); updateApiSelectionUI(); // 修复：确保选择新接口后更新UI
+                }, 200); }); }); }
         const getFormattedUrl = (url, fileName, format) => { const name = fileName.replace(/\.[^/.]+$/, ""); switch (format) { case 'markdown': return `![${name}](${url})`; case 'html': return `<img src="${url}" alt="${name}" title="${name}">`; default: return url; } };
         function updateResultAreaButtons(url, file) {
             const isImage = file && file.type.startsWith('image/');
@@ -909,6 +913,18 @@
                     if (xhr.status >= 200 && xhr.status < 300) { 
                         try { 
                             const data = JSON.parse(xhr.responseText); 
+                            
+                            // 核心修复/新增逻辑：处理中国邮政图床 (新野API) 的返回格式
+                            if (config.value === 'psbctc') {
+                                if (data.errno === 0 && data.data && data.data.url) {
+                                    onSuccess(data.data.url, data.data.imgFile || selectedFile.name);
+                                } else {
+                                    onError(data.message || '中国邮政图床上传失败');
+                                }
+                                return; // 处理完新接口后直接返回
+                            }
+                            
+                            // 旧接口（PGOpenAPI, 网易严选等）的返回格式处理
                             if ((data.code === 200 && data.url) || (data.errno === 0 && data.data?.url)) { 
                                 const url = data.url || data.data.url; 
                                 onSuccess(url, selectedFile.name); 
@@ -973,11 +989,10 @@
          */
         function showChangelogDialog() { 
             const content = `<p>本次版本更新为您带来了更多的选择和便利：</p><ul>
+                <li>【🚀 新增 v7.7】<b>中国邮政图床</b>：集成【中国邮政图床 (新野API)】，支持 2MB 内的图片上传。</li>
                 <li>【🔥 新功能 v7.6】<b>AI 图片增强</b>：AI 图片增强图片文件（需为图片格式）。您可以对上传后的图片进行一键 AI 增强，提升图片质量。增强后的图片将自动加入历史记录。</li>
                 <li>【🔥 改进 v7.6】<b>新增“打开”按钮</b>：在上传成功结果区和历史记录中，为图片文件新增“打开”按钮，可直接在新标签页中查看图片。</li>
                 <li>【重要修复 v7.6】历史记录折叠功能： 彻底修复了上传历史记录列表的折叠和展开动画不流畅以及滚动条显示异常的问题。</li>
-                <li>【v7.4优化】默认接口记忆：系统现在会自动记住您上次使用的上传接口，无需每次重新选择。</li>
-                <li>【v7.4优化】接口逻辑修复：修正了部分备用接口的链接解析逻辑，提高了上传成功率。</li>
                 </ul><p style="margin-top: 15px; font-size: 13px;">感谢您的使用！我们致力于提供一个安全、稳定、便捷的图床服务。</p>`; 
             showDialog({ 
                 title: `云落图床 ${CURRENT_APP_VERSION} 版本更新`, 
@@ -1128,7 +1143,11 @@
             pgopenToken = localStorage.getItem(apiKeyStorageKey) || null; 
             
             fetchYiyan(); loadHistory(); updateApiSelectionUI(); handleFormatChange(currentUrlFormat); fetchVisitorCount();
-            if (localStorage.getItem(VERSION_KEY) !== CURRENT_APP_VERSION) { showChangelogDialog(); }
+            
+            // 检查版本号，如果不是最新版本，显示更新日志
+            if (localStorage.getItem(VERSION_KEY) !== CURRENT_APP_VERSION) { 
+                showChangelogDialog(); 
+            }
             
             // 如果历史记录中没有文件，强制折叠
             if ($('#historyEmptyTip')) { setHistoryCollapseState(true); }
