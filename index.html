@@ -185,4 +185,974 @@
     .dialog { position: fixed; top: 50%; left: 50%; background-color: var(--md-sys-color-surface); color: var(--md-sys-color-on-surface); border-radius: 28px; width: calc(100% - 32px); max-width: 560px; z-index: 1001; transform: translate(-50%, -50%) scale(0.95); opacity: 0; visibility: hidden; transition: all var(--transition-medium); }
     .dialog-overlay.visible .dialog { transform: translate(-50%, -50%) scale(1); opacity: 1; visibility: visible; }
     .dialog-title { font-size: 22px; font-weight: 600; padding: 24px 24px 16px; }
-    .dialog-content { padding: 0 24px 24px; colo
+    .dialog-content { padding: 0 24px 24px; color: var(--md-sys-color-on-surface-variant); line-height: 1.6; }
+    /* 核心修复样式：让对话框内容可滚动 */
+    .dialog-scrollable .dialog-content {
+        max-height: 70vh; /* 设置最大高度，根据需要调整 */
+        overflow-y: auto; /* 允许垂直滚动 */
+        padding-right: 16px; /* 为滚动条留出空间 */
+    }
+    .dialog-actions { padding: 8px 16px 16px; display: flex; justify-content: flex-end; gap: 8px; }
+    .dialog-actions .btn { background: none; box-shadow: none; color: var(--md-sys-color-primary); height: 40px; }
+    .dialog ul { padding-left: 20px; margin-top: 8px; list-style-type: '👉 '; }
+    .dialog ul li { padding-left: 8px; margin-bottom: 6px; }
+
+    .dialog-bottom-sheet { top: auto; bottom: 0; left: 50%; transform: translate(-50%, 100%); border-radius: 28px 28px 0 0; }
+    .dialog-overlay.visible .dialog-bottom-sheet { transform: translate(-50%, 0); }
+    .dialog-bottom-sheet .dialog-title { padding-bottom: 8px; }
+    .dialog-bottom-sheet .dialog-content { padding: 0 0 16px; }
+    .list { list-style: none; padding: 0; margin: 0; }
+    .list-item { display: flex; align-items: center; padding: 12px 24px; cursor: pointer; transition: background-color var(--transition-fast); }
+    .list-item:active { background-color: rgba(0,0,0,0.05); }
+    body.dark-mode .list-item:active { background-color: rgba(255,255,255,0.05); }
+    .list-item-content { flex-grow: 1; pointer-events: none; } 
+    .list-item-icon { margin-left: 16px; color: var(--md-sys-color-primary); pointer-events: none; }
+
+    .snackbar { position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-100px); background-color: #323232; color: #fff; padding: 14px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 2000; font-size: 14px; transition: transform var(--transition-medium); }
+    body.dark-mode .snackbar { background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); }
+    .snackbar.visible { transform: translateX(-50%) translateY(0); }
+
+    /* --- 历史记录卡片样式 (核心修复区) --- */
+    #historyList { 
+        list-style: none; 
+        padding: 0; 
+        margin: 0; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+        transition: max-height 0.3s ease-out, padding-right 0.3s ease-out; /* 修复: 确保过渡应用于最大高度 */
+    }
+    
+    /* 修复: 确保 visible 状态有明确的最大高度和 overflow-y: auto */
+    #historyList.visible { 
+        max-height: 40vh; /* 使用视窗高度百分比，更具适应性 */
+        overflow-y: auto; 
+        padding-right: 8px; /* 为滚动条留出空间，防止内容被遮挡 */
+    }
+    
+    /* 修复: 确保 hidden 状态的 overflow-y 为 hidden */
+    #historyList.hidden { 
+        max-height: 0; 
+        overflow-y: hidden; 
+        padding-right: 0; /* 折叠时不需要滚动条空间 */
+    }
+    
+    #clearHistoryContainer {
+         /* 核心修复 2: 增加与上方列表的间距 */
+        margin-top: 16px;
+    }
+
+    /* --- 其他组件样式 (来自原版 + 优化) --- */
+    .upload-area { background-color: var(--md-sys-color-primary-container); border: 2px dashed var(--md-sys-color-primary); border-radius: 20px; padding: 32px 16px; text-align: center; cursor: pointer; transition: background-color var(--transition-fast), transform var(--transition-fast); }
+    .upload-area:hover { transform: scale(1.02); }
+    .upload-area:active { transform: scale(1.01); }
+    .upload-area.dragover { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); }
+    .upload-area .material-icons-outlined { font-size: 48px; color: var(--md-sys-color-primary); }
+    .upload-area.dragover .material-icons-outlined, .upload-area.dragover .upload-tip { color: var(--md-sys-color-on-primary); }
+    .upload-tip { color: var(--md-sys-color-on-primary-container); margin: 8px 0 16px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; } /* 优化: 避免长文件名换行 */
+    #imageUpload { display: none; }
+    .file-info { font-size: 14px; color: var(--md-sys-color-on-surface-variant); text-align: center; margin-top: 16px; word-break: break-all; }
+    #imagePreview { width: 100%; height: auto; max-height: 200px; margin-top: 16px; border-radius: 16px; object-fit: contain; display: none; }
+    .api-recommendation { font-size: 13px; color: var(--md-sys-color-on-surface-variant); background-color: var(--md-sys-color-surface-variant); padding: 12px; border-radius: 16px; margin-top: 8px; line-height: 1.6; }
+    .recommended-badge { font-size: 12px; font-weight: bold; color: var(--md-sys-color-primary); margin-left: 8px; }
+    .api-key-input-wrapper { display: flex; align-items: flex-end; }
+    .api-key-input-wrapper .textfield { flex-grow: 1; margin: 0; }
+    .api-key-input-wrapper .visibility-toggle { margin-left: 8px; margin-bottom: 2px; }
+    .key-guide-step { margin-top: 16px; margin-bottom: 16px; padding: 12px; border-radius: 12px; background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
+    .key-guide-step ol { padding-left: 20px; margin: 8px 0; }
+    .key-guide-step li { margin-bottom: 8px; line-height: 1.5; }
+    .api-selector-button { background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface); padding: 12px 16px; border-radius: 4px; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--md-sys-color-outline); margin-bottom: 16px; height: 48px; font-size: 16px; cursor: pointer; }
+    .api-selector-button:active { filter: brightness(0.95); }
+    .api-selector-button .material-icons { font-size: 24px; color: var(--md-sys-color-on-surface-variant); }
+    #statusMessage { font-weight: 500; text-align: center; margin-top: 16px; }
+    .status-success { color: var(--md-sys-color-success); }
+    .status-error { color: var(--md-sys-color-error); }
+    #uploadProgressContainer { margin-top: 16px; display: none; }
+    #resultUrl { background-color: var(--md-sys-color-surface-variant); border-radius: 12px; padding: 12px 16px; font-family: 'SF Mono', 'Consolas', monospace; word-break: break-all; color: var(--md-sys-color-on-surface-variant); border: none; margin-bottom: 16px; }
+    .history-item { display: flex; align-items: center; padding: 12px; background-color: var(--md-sys-color-surface-variant); border-radius: 16px; transition: background-color var(--transition-fast); }
+    .history-item-thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 16px; flex-shrink: 0; background-color: var(--md-sys-color-outline); display: flex; align-items: center; justify-content: center; cursor: pointer;}
+    .history-item-info { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; cursor: pointer; }
+    .history-item-info:active, .history-item-thumb:active { filter: brightness(0.9); }
+    .history-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .delete-button { flex-shrink: 0; }
+    #historyEmptyTip { text-align:center; color: var(--md-sys-color-on-surface-variant); padding: 20px 0; }
+    #censorStatus { margin-top: 16px; padding: 12px; border-radius: 12px; font-weight: bold; text-align: center; display: none; }
+    .censor-safe { background-color: var(--md-sys-color-success); color: var(--md-sys-color-on-primary); }
+    .censor-warning { background-color: var(--md-sys-color-error); color: var(--md-sys-color-on-primary); }
+    .censor-normal { background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); }
+    #yiyanContent { font-size: 16px; text-align: center; color: var(--md-sys-color-on-surface); margin: 0 0 8px; line-height: 1.6; }
+    #yiyanFrom { font-size: 13px; text-align: center; color: var(--md-sys-color-on-surface-variant); margin: 0 0 16px; }
+    .footer { text-align: center; font-size: 12px; color: var(--md-sys-color-on-surface-variant); padding: 24px 0; }
+    .footer a { color: var(--md-sys-color-on-surface-variant); text-decoration: underline; }
+
+    /* 优化：媒体查询以适应平板和电脑端 */
+    @media (min-width: 768px) { /* 平板 */
+        .container { max-width: 800px; padding: 24px; }
+        .main-content { gap: 24px; }
+        .card { padding: 24px; border-radius: 28px; }
+        .app-bar { padding: 16px 8px; }
+        h1 { font-size: 28px; }
+        .upload-area { padding: 40px 24px; }
+        .upload-area .material-icons-outlined { font-size: 56px; }
+        #imagePreview { max-height: 300px; }
+        #historyList.visible { max-height: 50vh; }
+        .dialog { max-width: 640px; }
+        .dialog-title { font-size: 24px; padding: 28px 28px 20px; }
+        .dialog-content { padding: 0 28px 28px; }
+        .snackbar { padding: 16px 28px; font-size: 15px; }
+        .footer { font-size: 13px; padding: 32px 0; }
+    }
+
+    @media (min-width: 1024px) { /* 电脑 */
+        .container { max-width: 960px; padding: 32px; }
+        .main-content { gap: 32px; }
+        .card { padding: 32px; border-radius: 32px; }
+        .app-bar { padding: 20px 12px; }
+        h1 { font-size: 32px; }
+        .upload-area { padding: 48px 32px; }
+        .upload-area .material-icons-outlined { font-size: 64px; }
+        #imagePreview { max-height: 400px; }
+        #historyList.visible { max-height: 60vh; }
+        .dialog { max-width: 720px; }
+        .dialog-title { font-size: 26px; padding: 32px 32px 24px; }
+        .dialog-content { padding: 0 32px 32px; }
+        .snackbar { padding: 18px 32px; font-size: 16px; }
+        .footer { font-size: 14px; padding: 40px 0; }
+    }
+</style>
+
+</head>
+<body>
+
+    <div id="memorialBanner" style="display: none;">
+    <span id="memorialBannerText"></span>
+    <button id="closeMemorialButton" title="关闭悼念模式">
+        <i class="material-icons">close</i>
+    </button>
+</div> 
+
+<div class="container">
+    <header class="app-bar">
+        <h1>云落图床</h1>
+        <button class="btn btn-icon" id="themeToggleButton">
+            <i class="material-icons">brightness_2</i>
+        </button>
+    </header>
+
+    <main class="main-content">
+        <section class="card">
+            <p class="card-title">接口设置</p>
+            <button id="apiSelectorButton" class="api-selector-button">
+                <span id="selectedApiName">重要</span>
+                <i class="material-icons">arrow_drop_down</i>
+            </button>
+            <input type="hidden" id="apiSelector" value="yanxuan">
+        </section>
+        
+        <section class="card">
+            <p class="card-title">文件上传</p>
+            <div id="uploadArea" class="upload-area">
+                <i class="material-icons-outlined">upload_file</i>
+                <p id="uploadTip" class="upload-tip">拖拽文件到这里或</p>
+                <label for="imageUpload" class="btn btn-raised"><i class="material-icons">add_photo_alternate</i>点击选择文件</label>
+            </div>
+            <input type="file" id="imageUpload">
+            <p id="fileSizeTip" class="file-info"></p>
+            <img id="imagePreview" src="" alt="图片预览">
+            <div id="uploadProgressContainer">
+                <div class="progress-container"><div class="progress-bar" id="uploadProgressBar"></div></div>
+            </div>
+            <div id="censorStatus"><i class="material-icons" style="vertical-align: middle;">security</i> <span>图片安全检查状态</span></div>
+            <p id="statusMessage"></p>
+            <div id="uploadButtonContainer" style="margin-top: 16px;">
+                <button id="uploadButton" class="btn btn-block btn-raised" disabled><i class="material-icons">backup</i>开始上传</button>
+            </div>
+        </section>
+        
+        <section class="card" id="resultArea" style="display: none;">
+            <p class="card-title">上传成功</p>
+            <div class="chip-group" id="urlFormatSelector">
+                <span class="chip active" data-format="url">URL</span>
+                <span class="chip" data-format="markdown">Markdown</span>
+                <span class="chip" data-format="html">HTML</span>
+            </div>
+            <div id="resultUrl"></div>
+            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                <button id="openUrlButton" class="btn" style="flex: 1;"><i class="material-icons">open_in_new</i>打开</button>
+                <button id="copyUrlButton" class="btn btn-raised" style="flex: 1;"><i class="material-icons">content_copy</i>复制</button>
+                <button id="enhanceImageButton" class="btn" style="flex: 1;"><i class="material-icons">auto_fix_high</i>AI 增强</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <p class="card-title">
+                <span>上传历史</span>
+                <button id="toggleHistoryButton" class="btn btn-icon" title="折叠/展开历史记录"><i class="material-icons">keyboard_arrow_up</i></button>
+            </p>
+            <ul id="historyList" class="visible"></ul>
+            <div id="clearHistoryContainer">
+                <button id="clearHistoryButton" class="btn" style="display: none;"><i class="material-icons">delete_sweep</i>清空记录</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <p id="yiyanContent"></p>
+            <p id="yiyanFrom"></p>
+            <div style="text-align: center;">
+                <button id="refreshYiyanButton" class="btn"><i class="material-icons">refresh</i>换一句</button>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="footer">
+        <p>联系方式: <a href="mailto:jiayuxuan_2024@qq.com">jiayuxuan_2024@qq.com</a></p>
+        <p>本站仅供学习交流使用
+        。温馨提示，可以双击横幅显示更多纪念当日纪念人物</p>
+        <div id="visitorCount"></div>
+    </footer>
+</div>
+
+<script>
+    // --- 原生 UI 组件逻辑 (性能优化版) ---
+    function showSnackbar(message) {
+        const existing = document.querySelector('.snackbar');
+        if (existing) existing.remove();
+        const snackbar = document.createElement('div');
+        snackbar.className = 'snackbar';
+        snackbar.textContent = message;
+        document.body.appendChild(snackbar);
+        setTimeout(() => snackbar.classList.add('visible'), 10);
+        setTimeout(() => {
+            snackbar.classList.remove('visible');
+            snackbar.addEventListener('transitionend', () => snackbar.remove(), { once: true });
+        }, 3000);
+    }
+    
+    /**
+     * 显示对话框 (优化：返回一个关闭句柄)
+     * @param {object} options - 配置选项
+     * @param {string} options.title - 标题
+     * @param {string} options.content - 内容（可以是 HTML 字符串）
+     * @param {Array<object>} [options.buttons=[]] - 按钮配置
+     * @param {string} [options.type='modal'] - 对话框类型 ('modal' 或 'bottom-sheet')
+     * @param {boolean} [options.scrollable=false] - 内容是否可滚动 (新增)
+     * @returns {{dialog: Element, close: function}} - 返回对话框元素和关闭函数
+     */
+    function showDialog(options) {
+        const { title, content, buttons = [], type = 'modal', scrollable = false } = options;
+        const overlay = document.createElement('div');
+        overlay.className = 'dialog-overlay';
+        const dialog = document.createElement('div');
+        let dialogClass = 'dialog';
+        if (type === 'bottom-sheet') {
+            dialogClass += ' dialog-bottom-sheet';
+        }
+        // 修复：添加可滚动类
+        if (scrollable) {
+            dialogClass += ' dialog-scrollable';
+        }
+        dialog.className = dialogClass;
+        
+        let dialogHtml = `<div class="dialog-title">${title}</div><div class="dialog-content">${content}</div>`;
+        if (buttons.length > 0) {
+            dialogHtml += '<div class="dialog-actions">';
+            buttons.forEach(btn => { 
+                // 修正: 为打开按钮设置特定的样式和行为
+                let buttonClass = 'btn';
+                let buttonStyle = '';
+                if (btn.text === '打开' && btn.url) { // 检查是否有 URL 属性
+                    buttonClass += ' btn-raised'; // 让它更显眼
+                    buttonStyle = 'style="flex: 1;"';
+                    dialogHtml += `<a href="${btn.url}" target="_blank" class="${buttonClass}" ${buttonStyle}><i class="material-icons">open_in_new</i>${btn.text}</a>`;
+                } else {
+                    // 修复：为按钮添加 data-id 以便事件监听，并确保非 URL 按钮使用 <button> 标签
+                    // 修复：确保所有按钮都有 data-id，用于事件监听
+                    dialogHtml += `<button class="${buttonClass}" data-id="${btn.text}" ${buttonStyle}><i class="material-icons">${btn.icon || ''}</i>${btn.text}</button>`;
+                }
+            });
+            dialogHtml += '</div>';
+        }
+        dialog.innerHTML = dialogHtml;
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        const closeDialog = () => {
+            overlay.classList.remove('visible');
+            // 使用 requestAnimationFrame 确保在移除前执行 CSS 动画
+            requestAnimationFrame(() => {
+                overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
+            });
+        };
+
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDialog(); });
+
+        dialog.querySelectorAll('.btn').forEach(btnElement => {
+            // 仅处理 <button> 标签，<a> 标签由浏览器默认处理
+            if (btnElement.tagName === 'BUTTON') {
+                const btnId = btnElement.dataset.id;
+                const btnConfig = buttons.find(b => b.text === btnId);
+                btnElement.addEventListener('click', () => {
+                    if (btnConfig && btnConfig.onClick) btnConfig.onClick();
+                    // 仅在 onClick 中没有阻止关闭时执行关闭
+                    if (!btnConfig || !btnConfig.preventClose) {
+                        closeDialog();
+                    }
+                });
+            }
+        });
+        
+        setTimeout(() => overlay.classList.add('visible'), 10);
+        
+        // 返回对话框元素和关闭函数，用于外部控制
+        return { dialog, close: closeDialog }; 
+    }
+    
+    // --- 应用逻辑 ---
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => document.querySelectorAll(selector);
+
+    const uploadArea = $('#uploadArea'), uploadTip = $('#uploadTip'), imageUpload = $('#imageUpload');
+    const apiSelector = $('#apiSelector'), selectedApiName = $('#selectedApiName'), apiSelectorButton = $('#apiSelectorButton');
+    const uploadButton = $('#uploadButton'), statusMessage = $('#statusMessage'), imagePreview = $('#imagePreview');
+    const progressContainer = $('#uploadProgressContainer'), progressBar = $('#uploadProgressBar');
+    const resultArea = $('#resultArea'), resultUrlDisplay = $('#resultUrl'), openUrlButton = $('#openUrlButton'), copyUrlButton = $('#copyUrlButton'), enhanceImageButton = $('#enhanceImageButton'); 
+    const yiyanContent = $('#yiyanContent'), yiyanFrom = $('#yiyanFrom'), refreshYiyanButton = $('#refreshYiyanButton');
+    const historyList = $('#historyList'), clearHistoryButton = $('#clearHistoryButton'), toggleHistoryButton = $('#toggleHistoryButton');
+    const themeToggleButton = $('#themeToggleButton');
+    const fileSizeTip = $('#fileSizeTip');
+    const urlFormatSelector = $('#urlFormatSelector');
+    const censorStatusElement = $('#censorStatus'), visitorCountElement = $('#visitorCount');
+    const memorialBanner = $('#memorialBanner'); // 新增：悼念横幅元素
+    const memorialBannerText = $('#memorialBannerText'); // 新增：悼念横幅文本元素
+    const closeMemorialButton = $('#closeMemorialButton'); // 新增：关闭按钮
+
+    const CURRENT_APP_VERSION = 'v8.0'; // 版本号保持不变
+    const VERSION_KEY = 'yunluo_app_version';
+    const localStorageKey = 'yunluo_image_upload_history_v3'; 
+    const API_PREFERENCE_KEY = 'yunluo_api_preference';
+    const MAX_HISTORY_ITEMS = 15;
+    const THEME_KEY = 'yunluo_theme_mode';
+    const URL_FORMAT_KEY = 'yunluo_url_format';
+    const HISTORY_COLLAPSED_KEY = 'yunluo_history_collapsed'; 
+    const CENSOR_API_URL = 'https://api.pearktrue.cn/api/pornimage/';
+    const VISITOR_COUNT_API = 'https://api.jkyai.top/API/tjfksl/tongji.php';
+    const CENSOR_CLASSIFICATIONS_TO_BLOCK = ['色情', '露点', 'hentai', '暴力', '暴恐'];
+    // 修复：MEMORIAL_CLOSED_KEY 现在存储的是当前纪念人物 ID 组合的哈希值
+    const MEMORIAL_CLOSED_KEY = 'yunluo_memorial_closed_hash'; 
+    
+    // 新增 AI 增强 API 信息
+    const AI_ENHANCE_API = {
+        url: 'http://api-v2.yuafeng.cn/API/clear_image.php',
+        key: 'fd950751ea8a7465b66267db0e31874f96bf61ac0bd421b853d148088bd96838'
+    };
+
+    const API_OPTIONS = [ 
+        { value: 'yanxuan', name: '网易严选图床', tip: '支持图片，单文件限制 5MB。', isRecommended: true, endpoint: 'https://api.xinyew.cn/api/yanxuantc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
+        { value: 'main', name: '主接口 (360图床)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/360tc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
+        { value: 'backup', name: '备用接口 (京东图床)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/jdtc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
+        { value: 'sogou', name: '搜狗图床 (需meta头)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/sogotc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' } 
+    ];
+    let selectedFile = null, sogouMetaTag = null, uploadedUrl = '', currentUrlFormat = localStorage.getItem(URL_FORMAT_KEY) || 'url';
+    const API_CONFIG = API_OPTIONS.reduce((acc, curr) => { acc[curr.value] = curr; return acc; }, {});
+
+    let todayMemorialFigures = []; // 新增：保存今日所有纪念人物的列表
+
+    const truncateFilename = (name, maxLength) => name.length > maxLength ? `${name.slice(0, maxLength / 2)}...${name.slice(-maxLength / 2)}` : name;
+    async function copyToClipboard(text, successMessage) { try { await navigator.clipboard.writeText(text); showSnackbar(successMessage); } catch (err) { showSnackbar('复制失败，请手动操作'); } }
+    
+    function updateApiSelectionUI() { 
+        const config = API_CONFIG[apiSelector.value]; 
+        selectedApiName.textContent = config.name; 
+        fileSizeTip.textContent = config.tip; 
+        imageUpload.setAttribute('accept', config.accept); 
+        if (selectedFile) handleFileSelect(selectedFile); 
+        
+        // 修复：更新 Open URL 按钮的状态
+        updateResultAreaButtons(uploadedUrl, selectedFile);
+    }
+    function showApiSelectorDialog() { let listHtml = '<ul class="list">'; API_OPTIONS.forEach(opt => { const isChecked = opt.value === apiSelector.value; const badge = opt.isRecommended ? '<span class="recommended-badge">推荐</span>' : ''; listHtml += `<li class="list-item" data-value="${opt.value}"><div class="list-item-content">${opt.name} ${badge}</div><div class="list-item-icon"><i class="material-icons">radio_button_${isChecked ? 'checked' : 'unchecked'}</i></div></li>`; }); listHtml += '</ul>'; const { dialog } = showDialog({ title: '选择接口', content: listHtml, type: 'bottom-sheet' }); dialog.querySelectorAll('.list-item').forEach(item => { item.addEventListener('click', function() { const newVal = this.dataset.value; dialog.querySelectorAll('.material-icons').forEach(i => i.textContent = 'radio_button_unchecked'); this.querySelector('.material-icons').textContent = 'radio_button_checked'; setTimeout(() => { if (newVal !== apiSelector.value) { apiSelector.value = newVal; localStorage.setItem(API_PREFERENCE_KEY, newVal); selectedFile = null; imageUpload.value = ''; imagePreview.style.display = 'none'; uploadButton.disabled = true; statusMessage.textContent = '请选择新文件'; censorStatusElement.style.display = 'none'; updateApiSelectionUI(); } dialog.closest('.dialog-overlay')?.click(); }, 200); }); }); }
+    const getFormattedUrl = (url, fileName, format) => { const name = fileName.replace(/\.[^/.]+$/, ""); switch (format) { case 'markdown': return `![${name}](${url})`; case 'html': return `<img src="${url}" alt="${name}" title="${name}">`; default: return url; } };
+    function updateResultAreaButtons(url, file) {
+        const isImage = file && file.type.startsWith('image/');
+        // 修复：Open 按钮
+        if (url) {
+            openUrlButton.style.display = 'inline-flex';
+            openUrlButton.onclick = () => window.open(url, '_blank');
+        } else {
+            openUrlButton.style.display = 'none';
+            openUrlButton.onclick = null;
+        }
+        // AI 增强按钮
+        enhanceImageButton.style.display = isImage ? 'inline-flex' : 'none';
+    }
+    function handleFormatChange(newFormat) { 
+        currentUrlFormat = newFormat; 
+        localStorage.setItem(URL_FORMAT_KEY, newFormat); 
+        urlFormatSelector.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); 
+        urlFormatSelector.querySelector(`[data-format="${newFormat}"]`).classList.add('active'); 
+        if (uploadedUrl && selectedFile) { 
+            resultUrlDisplay.textContent = getFormattedUrl(uploadedUrl, selectedFile.name, newFormat); 
+            // 修复：如果切换格式，Open 按钮不受影响，但确保其状态正确
+            updateResultAreaButtons(uploadedUrl, selectedFile);
+        } 
+    }
+    function handleFileSelect(file) { 
+        if (!file) { 
+            selectedFile = null; 
+            uploadButton.disabled = true; 
+            imagePreview.style.display = 'none'; 
+            uploadTip.textContent = '拖拽文件到这里或'; 
+            return; 
+        } 
+        const config = API_CONFIG[apiSelector.value]; 
+        const reset = () => { 
+            statusMessage.textContent = ''; 
+            selectedFile = null; 
+            uploadButton.disabled = true; 
+            imagePreview.style.display = 'none'; 
+            fileSizeTip.textContent = config.tip; 
+            censorStatusElement.style.display = 'none'; 
+            updateResultAreaButtons('', null); // 修复
+        }; 
+        if (config.accept !== '*' && !file.type.startsWith('image/')) { 
+            reset(); 
+            statusMessage.textContent = '请选择图片文件！'; 
+            statusMessage.className = 'status-error'; 
+            uploadTip.textContent = '拖拽文件到这里或'; 
+            return; 
+        } 
+        if (file.size > config.fileSize) { 
+            reset(); 
+            statusMessage.textContent = `文件超过 ${(config.fileSize / (1024*1024)).toFixed(2)}MB！`; 
+            statusMessage.className = 'status-error'; 
+            uploadTip.textContent = '拖拽文件到这里或'; 
+            return; 
+        } 
+        selectedFile = file; 
+        statusMessage.textContent = ''; 
+        fileSizeTip.textContent = `已选择: ${selectedFile.name} (${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)`; 
+        uploadButton.disabled = false; 
+        if (file.type.startsWith('image/')) { 
+            const reader = new FileReader(); 
+            reader.onload = e => { 
+                imagePreview.src = e.target.result; 
+                imagePreview.style.display = 'block'; 
+            }; 
+            reader.readAsDataURL(selectedFile); 
+            setCensorStatus('normal', '图片已选中。上传后将进行最终安全检查。', true); 
+        } else { 
+            imagePreview.style.display = 'none'; 
+            setCensorStatus('normal', '非图片文件，安全检查将跳过。', true); 
+        } 
+        resultArea.style.display = 'none'; 
+        uploadTip.textContent = `文件已就绪: ${truncateFilename(selectedFile.name, 28)}`; 
+        updateResultAreaButtons('', selectedFile); // 修复
+    }
+    
+    // 核心：AI 增强功能
+    async function enhanceImage(url, originalName) {
+        // 1. 显示加载对话框并获取关闭句柄
+        const loadingDialog = showDialog({
+            title: 'AI 图片增强',
+            content: `<p style="text-align:center;"><i class="material-icons" style="vertical-align: middle;">autorenew</i> 正在请求 AI 服务器，请稍候...</p>`,
+            buttons: []
+        });
+        
+        const enhanceUrl = `${AI_ENHANCE_API.url}?url=${encodeURIComponent(url)}&apikey=${AI_ENHANCE_API.key}`;
+        
+        try {
+            const response = await fetch(enhanceUrl);
+            if (!response.ok) throw new Error(`HTTP 错误: ${response.status}`);
+            const data = await response.json();
+
+            // 2. 成功后，先关闭加载对话框
+            loadingDialog.close();
+
+            if (data.code === 0 && data.data && data.data.image) {
+                const enhancedUrl = data.data.image;
+                const enhancedName = `AI增强-${originalName}`;
+                
+                addHistoryItem(enhancedName, enhancedUrl);
+                
+                // 3. 显示成功对话框
+                showDialog({
+                    title: 'AI 增强成功 🎉',
+                    content: `<p>图片已成功增强，并已加入历史记录。</p><img src="${enhancedUrl}" alt="增强后的图片" style="max-width: 100%; border-radius: 12px; margin-top: 15px;">`,
+                    buttons: [
+                        { text: '关闭' },
+                        // 修复：新增 Open 按钮到对话框，确保有 URL 属性
+                        { text: '打开', url: enhancedUrl },
+                        { text: '复制链接', onClick: () => copyToClipboard(enhancedUrl, '增强图片链接已复制') }
+                    ],
+                    scrollable: true
+                });
+            } else {
+                throw new Error(data.msg || 'API返回格式错误');
+            }
+        } catch (error) {
+            console.error('AI Enhance Error:', error);
+            
+            // 4. 失败时，关闭加载对话框
+            loadingDialog.close();
+
+            // 5. 显示失败对话框
+            showDialog({
+                title: 'AI 增强失败 😢',
+                content: `<p>处理过程中发生错误：${error.message}。请检查原图链接是否有效，或稍后再试。</p>`,
+                buttons: [{ text: '好的' }]
+            });
+        }
+    }
+    // 核心：AI 增强功能 END
+
+    function renderHistory(history) { 
+        historyList.innerHTML = ''; 
+        const hasHistory = history.length > 0; 
+        clearHistoryButton.style.display = hasHistory ? 'inline-flex' : 'none'; 
+        toggleHistoryButton.style.display = hasHistory ? 'block' : 'none'; 
+        $('#clearHistoryContainer').style.display = hasHistory ? 'block' : 'none'; 
+        if (!hasHistory) { 
+            historyList.innerHTML = '<li id="historyEmptyTip">暂无上传记录</li>'; 
+            return; 
+        } 
+        history.forEach(item => { 
+            const li = document.createElement('li'); 
+            li.className = 'history-item'; 
+            const isImage = item.name.match(/\.(jpe?g|png|gif|bmp|webp|ico|svg|jpeg)$/i);
+            
+            // 修正：AI 增强按钮现在对所有图片文件显示
+            const canEnhance = isImage;
+            
+            li.innerHTML = `
+                ${isImage ? `<img src="${item.url}" alt="thumbnail" class="history-item-thumb" loading="lazy">` : `<div class="history-item-thumb"><i class="material-icons">insert_drive_file</i></div>`}
+                <div class="history-item-info" data-url="${item.url}" data-name="${item.name}"><span>${truncateFilename(item.name, 35)}</span></div>
+                <div class="history-item-actions">
+                    <button class="open-button btn btn-icon" data-url="${item.url}" title="打开链接" style="display: ${isImage ? 'block' : 'none'};"><i class="material-icons">open_in_new</i></button>
+                    ${canEnhance ? `<button class="enhance-button btn btn-icon" data-url="${item.url}" data-name="${item.name}" title="AI 图片增强"><i class="material-icons">auto_fix_high</i></button>` : ''}
+                    <button class="delete-button btn btn-icon" data-url="${item.url}" data-name="${item.name}"><i class="material-icons">delete</i></button>
+                </div>
+            `; 
+            historyList.appendChild(li); 
+        }); 
+    }
+    function loadHistory() { const history = JSON.parse(localStorage.getItem(localStorageKey)) || []; renderHistory(history); applyHistoryCollapseState(history.length > 0); }
+    function addHistoryItem(name, url) { let history = JSON.parse(localStorage.getItem(localStorageKey)) || []; history = history.filter(item => item.url !== url); history.unshift({ name, url, timestamp: Date.now() }); if (history.length > MAX_HISTORY_ITEMS) history.pop(); localStorage.setItem(localStorageKey, JSON.stringify(history)); renderHistory(history); setHistoryCollapseState(false); }
+    function deleteHistoryItem(url) { let history = JSON.parse(localStorage.getItem(localStorageKey)) || []; history = history.filter(item => item.url !== url); localStorage.setItem(localStorageKey, JSON.stringify(history)); renderHistory(history); showSnackbar('该条历史记录已删除'); if (history.length === 0) setHistoryCollapseState(true); }
+    function clearAllHistory() { showDialog({ title: '确认清空', content: '确定要清空所有上传历史记录吗？', buttons: [{ text: '取消' }, { text: '确定', onClick: () => { localStorage.removeItem(localStorageKey); renderHistory([]); showSnackbar('所有历史记录已清空'); setHistoryCollapseState(true); }}] }); }
+    
+    // --- 修复后的历史记录折叠/展开逻辑 ---
+    function setHistoryCollapseState(isCollapsed) {
+        localStorage.setItem(HISTORY_COLLAPSED_KEY, isCollapsed ? 'true' : 'false');
+        
+        // 确保 DOM 元素存在，并且有历史记录时才显示清空按钮
+        const hasHistory = (JSON.parse(localStorage.getItem(localStorageKey)) || []).length > 0;
+        
+        if (isCollapsed) {
+            historyList.classList.remove('visible');
+            historyList.classList.add('hidden');
+            toggleHistoryButton.querySelector('.material-icons').textContent = 'keyboard_arrow_down';
+            $('#clearHistoryContainer').style.display = 'none'; // 折叠时隐藏清空按钮
+        } else {
+            historyList.classList.remove('hidden');
+            historyList.classList.add('visible'); // 修复：确保展开时有 visible 类
+            toggleHistoryButton.querySelector('.material-icons').textContent = 'keyboard_arrow_up';
+            if (hasHistory) {
+                $('#clearHistoryContainer').style.display = 'block'; // 展开且有历史时显示清空按钮
+            }
+        }
+    }
+    
+    function applyHistoryCollapseState(hasHistory) {
+        const saved = localStorage.getItem(HISTORY_COLLAPSED_KEY);
+        // 如果没有历史记录，强制折叠（隐藏）
+        const shouldCollapse = !hasHistory || (saved === 'true');
+        setHistoryCollapseState(shouldCollapse);
+    }
+    // --- 修复后的历史记录折叠/展开逻辑 END ---
+
+    function setCensorStatus(level, message, show = true) { censorStatusElement.style.display = show ? 'block' : 'none'; censorStatusElement.className = `censor-${level}`; censorStatusElement.querySelector('span').textContent = message; censorStatusElement.querySelector('.material-icons').textContent = level === 'safe' ? 'check_circle' : level === 'warning' ? 'error' : 'security'; }
+    async function checkCensor(url) { if (!selectedFile.type.startsWith('image/')) { setCensorStatus('normal', '非图片文件，安全检查跳过。', true); return true; } setCensorStatus('normal', '正在进行安全检查...', true); try { const response = await fetch(CENSOR_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: url }) }); if (!response.ok) { setCensorStatus('normal', `安全检查服务错误(${response.status})，链接已放行。`, true); return true; } const result = await response.json(); if (result.code !== 200 || !result.data) { setCensorStatus('normal', `安全检查失败(${result.msg || '未知错误'})，链接已放行。`, true); return true; } const classification = result.classification || '未知'; if (CENSOR_CLASSIFICATIONS_TO_BLOCK.includes(classification)) { const message = `安全警告！图片被判定为：${classification}。链接已拦截。`; setCensorStatus('warning', message, true); return false; } else { const message = `安全检查通过。图片分类：${classification}。`; setCensorStatus('safe', message, true); return true; } } catch (error) { console.error('Censor API error:', error); setCensorStatus('normal', '安全检查网络错误，链接已放行。', true); return true; } }
+    
+    async function uploadFile() { 
+        if (!selectedFile) return; 
+        
+        const config = API_CONFIG[apiSelector.value]; 
+        
+        if (config.accept === 'image/*' && !selectedFile.type.startsWith('image/')) { 
+            statusMessage.textContent = '当前接口仅支持上传图片文件！'; 
+            statusMessage.className = 'status-error'; 
+            return; 
+        } 
+        
+        statusMessage.textContent = '准备上传...'; 
+        statusMessage.className = ''; 
+        uploadButton.disabled = true; 
+        resultArea.style.display = 'none'; 
+        progressContainer.style.display = 'block'; 
+        progressBar.style.width = '0%'; 
+        setCensorStatus('normal', '文件上传中...', true); 
+        
+        const onSuccess = async (url, fileName) => { 
+            if (selectedFile.type.startsWith('image/')) { 
+                const isSafe = await checkCensor(url); 
+                if (!isSafe) { 
+                    statusMessage.textContent = '上传成功，但图片安全检查未通过，链接已拦截。'; 
+                    statusMessage.className = 'status-error'; 
+                    uploadedUrl = ''; 
+                    resultArea.style.display = 'none'; 
+                    updateResultAreaButtons('', selectedFile); // 修复
+                    return; 
+                } 
+            } else { 
+                setCensorStatus('normal', '非图片文件，安全检查跳过。', true); 
+            } 
+            uploadedUrl = url; 
+            statusMessage.textContent = '上传成功！'; 
+            statusMessage.className = 'status-success'; 
+            resultUrlDisplay.textContent = getFormattedUrl(url, fileName, currentUrlFormat); 
+            resultArea.style.display = 'block'; 
+            updateResultAreaButtons(uploadedUrl, selectedFile); // 修复
+            addHistoryItem(fileName, url); 
+        }; 
+        
+        const onError = (msg) => { 
+            uploadedUrl = ''; 
+            statusMessage.textContent = `上传失败: ${msg}`; 
+            statusMessage.className = 'status-error'; 
+            setCensorStatus('warning', '上传失败，未进行安全检查。', true); 
+            updateResultAreaButtons('', selectedFile); // 修复
+        }; 
+        
+        try { 
+            const formData = new FormData(); 
+            formData.append(config.fileName, selectedFile, selectedFile.name); 
+            const xhr = new XMLHttpRequest(); 
+            xhr.open('POST', config.endpoint, true); 
+            
+            xhr.upload.onprogress = e => { 
+                if (e.lengthComputable) { 
+                    const percent = (e.loaded / e.total) * 100; 
+                    progressBar.style.width = percent + '%'; 
+                    statusMessage.textContent = `上传中... ${Math.round(percent)}%`; 
+                } 
+            }; 
+            
+            xhr.onloadend = () => { 
+                uploadButton.disabled = false; 
+                progressContainer.style.display = 'none'; 
+            }; 
+            
+            xhr.onerror = () => { 
+                onError('网络连接错误'); 
+                sogouMetaTag?.remove(); 
+                sogouMetaTag = null; 
+            }; 
+            
+            xhr.onload = () => { 
+                sogouMetaTag?.remove(); 
+                sogouMetaTag = null; 
+                if (xhr.status >= 200 && xhr.status < 300) { 
+                    try { 
+                        const data = JSON.parse(xhr.responseText); 
+                        if ((data.code === 200 && data.url) || (data.errno === 0 && data.data?.url)) { 
+                            const url = data.url || data.data.url; 
+                            onSuccess(url, selectedFile.name); 
+                            if (apiSelector.value === 'sogou' && data.meta) { 
+                                const temp = document.createElement('div'); 
+                                temp.innerHTML = data.meta; 
+                                sogouMetaTag = temp.firstChild; 
+                                document.head.appendChild(sogouMetaTag); 
+                            } 
+                        } else { 
+                            onError(data.msg || data.error || data.message || 'API返回格式错误'); 
+                        } 
+                    } catch (e) { 
+                        onError('解析响应失败'); 
+                    } 
+                } else { 
+                    onError(`HTTP ${xhr.status} 错误`); 
+                } 
+            }; 
+            
+            xhr.send(formData); 
+        } catch (error) { 
+            onError(error.message); 
+            uploadButton.disabled = false; 
+            progressContainer.style.display = 'none'; 
+        } 
+    }
+    
+    async function fetchYiyan() { try { const response = await fetch('https://v1.hitokoto.cn/?encode=json&c=a&c=b&c=c&c=d&c=i'); if (!response.ok) throw new Error(); const data = await response.json(); yiyanContent.textContent = data.hitokoto; yiyanFrom.textContent = `—— ${data.from} ${data.from_who ? '（' + data.from_who + '）' : ''}`; } catch (e) { yiyanContent.textContent = '愿你有一天能与你最重要的人重逢。'; yiyanFrom.textContent = '—— 未知'; } }
+    async function fetchVisitorCount() { try { await fetch(`${VISITOR_COUNT_API}?text=yunluo_image_bed`); visitorCountElement.textContent = '欢迎访问云落图床'; } catch (e) { console.error('Visitor count API error:', e); visitorCountElement.textContent = '访客统计服务连接失败'; } }
+    function applyTheme(mode) { 
+        const icon = themeToggleButton.querySelector('.material-icons'); 
+        const isGrayscaleMode = document.body.classList.contains('grayscale-mode');
+
+        if (mode === 'dark') { 
+            document.body.classList.add('dark-mode'); 
+            icon.textContent = 'light_mode'; 
+        } else { 
+            document.body.classList.remove('dark-mode'); 
+            icon.textContent = 'brightness_2'; 
+        } 
+        
+        // 只有非悼念模式下才保存和切换图标
+        if (!isGrayscaleMode) {
+            localStorage.setItem(THEME_KEY, mode);
+        }
+    }
+
+    /**
+     * 修复后的更新日志对话框，内容可滚动，并添加了 AI 增强公告
+     */
+    function showChangelogDialog() { 
+        const content = `<p>本次版本更新为您带来了更多的选择和便利：</p><ul>
+            <li>【 v8.0】因功能问题本版本实为回档的v7.7。</li>
+            <li>【🔥 新功能 v7.6】<b>AI 图片增强</b>：AI 图片增强图片文件（需为图片格式）。您可以对上传后的图片进行一键 AI 增强，提升图片质量。增强后的图片将自动加入历史记录。</li>
+            <li>【🔥 改进 v7.6】<b>新增“打开”按钮</b>：在上传成功结果区和历史记录中，为图片文件新增“打开”按钮，可直接在新标签页中查看图片。</li>
+            <li>【重要修复 v7.6】历史记录折叠功能： 彻底修复了上传历史记录列表的折叠和展开动画不流畅以及滚动条显示异常的问题。</li>
+            <li>【v7.4优化】默认接口记忆：系统现在会自动记住您上次使用的上传接口，无需每次重新选择。</li>
+            <li>【v7.4优化】接口逻辑修复：修正了部分备用接口的链接解析逻辑，提高了上传成功率。</li>
+            </ul><p style="margin-top: 15px; font-size: 13px;">感谢您的使用！我们致力于提供一个安全、稳定、便捷的图床服务。</p>`; 
+        showDialog({ 
+            title: `云落图床 ${CURRENT_APP_VERSION} 版本更新`, 
+            content, 
+            buttons: [{ text: '好的，我知道了' }],
+            scrollable: true // 核心修复：启用内容滚动
+        }); 
+        localStorage.setItem(VERSION_KEY, CURRENT_APP_VERSION); 
+    }
+    
+    // --- 新增：关闭悼念模式逻辑 (已升级为多人物支持) ---
+    function closeMemorialMode(figures) {
+        // 生成当前纪念人物 ID 组合的哈希值
+        const idHash = sha256(figures.map(f => f.id).sort().join(','));
+
+        showDialog({
+            title: '确认关闭悼念模式',
+            content: `<p>当前已进入悼念模式，以纪念 <b>${figures.map(f => f.name).join('、')}</b> 等人物。</p><p>关闭后，横幅将消失，且如果开启了灰色模式，页面将恢复彩色。本次关闭状态（哈希值：<code>${idHash.substring(0, 10)}...</code>）将保存。在当前纪念日内，横幅将不再显示。但如果下一个纪念日的人物组合发生变化，横幅仍会按照新组合的设置显示。</p><p><b>您确定要关闭悼念模式吗？</b></p>`,
+            buttons: [
+                { text: '取消' },
+                { text: '确定关闭', onClick: () => {
+                    localStorage.setItem(MEMORIAL_CLOSED_KEY, idHash);
+                    // 移除所有悼念模式的影响
+                    document.body.classList.remove('grayscale-mode');
+                    memorialBanner.style.display = 'none';
+                    themeToggleButton.disabled = false;
+                    
+                    // 恢复正常主题
+                    const savedTheme = localStorage.getItem(THEME_KEY);
+                    applyTheme(savedTheme || 'light');
+                    
+                    showSnackbar('悼念模式已关闭，页面恢复正常显示。');
+                }}
+            ]
+        });
+    }
+    
+    // --- 新增：显示多人物列表的弹窗 (升级版，支持显示description、years等细节) ---
+    function showMultipleMemorialDialog(figures) {
+        let listHtml = '<ul>';
+        figures.forEach(f => {
+            const date = f.memorialDates[0]; // 假设第一个日期为主要纪念日
+            const reason = date.type || '离世'; // 使用 type 作为 reason
+            listHtml += `<li>
+                <b>${f.name}</b> (${f.years})<br>
+                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">描述：${f.description || '无详细描述'}</span><br>
+                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">纪念日期：${date.month}月${date.day}日（${reason}）</span>
+            </li>`;
+        });
+        listHtml += '</ul>';
+
+        showDialog({
+            title: '今日纪念人物列表',
+            content: `<p>今日是以下 ${figures.length} 位人物的纪念日：</p>${listHtml}<p>您可以通过右侧的 <i class="material-icons" style="font-size: 16px; vertical-align: middle;">close</i> 按钮关闭悼念模式。</p>`,
+            buttons: [
+                { text: '知道了' },
+            ],
+            scrollable: true
+        });
+    }
+    // --- 关闭悼念模式逻辑 END ---
+
+    // --- 纪念人物系统逻辑 (已更新，支持多人物) ---
+    function initMemorialSystem() {
+        if (typeof memorialFigures === 'undefined' || !memorialFigures.length) {
+            return;
+        }
+
+        const today = new Date();
+        const month = today.getMonth() + 1; // 1-based month
+        const day = today.getDate();
+        
+        // 1. 收集所有当日的纪念人物
+        const foundMemorials = memorialFigures.filter(figure => 
+            figure.memorialDates.some(date => 
+                date.month === month && date.day === day
+            )
+        );
+        
+        todayMemorialFigures = foundMemorials; // 保存到全局变量
+
+        // 2. 如果没有纪念人物，则退出
+        if (foundMemorials.length === 0) {
+            document.body.classList.remove('grayscale-mode');
+            memorialBanner.style.display = 'none';
+            themeToggleButton.disabled = false;
+            localStorage.removeItem(MEMORIAL_CLOSED_KEY); // 清除旧状态
+            return;
+        }
+
+        // 3. 生成当前人物 ID 组合的哈希值
+        const currentIdHash = sha256(foundMemorials.map(f => f.id).sort().join(','));
+        const memorialClosedHash = localStorage.getItem(MEMORIAL_CLOSED_KEY);
+
+        // 4. 检查用户是否已针对此人物组合关闭过悼念模式
+        if (memorialClosedHash === currentIdHash) {
+            console.log(`Memorial mode for hash ${currentIdHash.substring(0, 10)}... was previously closed by user.`);
+            return; // 退出，不应用悼念模式
+        }
+
+        // 5. 应用悼念模式
+        
+        // a. 处理横幅内容
+        const primaryFigure = foundMemorials[0];
+        let bannerText = primaryFigure.bannerText;
+        if (foundMemorials.length > 1) {
+            bannerText += ` ...（另有 ${foundMemorials.length - 1} 位人物）`;
+        }
+        memorialBannerText.textContent = bannerText;
+        memorialBanner.style.display = 'flex';
+        closeMemorialButton.style.display = 'block';
+
+        // b. 应用自定义样式
+        for (const prop in primaryFigure.bannerStyle) {
+            memorialBanner.style[prop] = primaryFigure.bannerStyle[prop];
+        }
+
+        // c. 特殊处理：灰色模式
+        if (foundMemorials.some(f => f.id === 'yangzhenning')) { // 只要有一个人物需要强制灰色就应用
+            document.body.classList.add('grayscale-mode');
+            themeToggleButton.disabled = true; 
+            themeToggleButton.querySelector('.material-icons').textContent = 'dark_mode';
+            if (!localStorage.getItem('yunluo_grayscale_tip_shown')) {
+                showSnackbar(`已进入【沉痛悼念】模式，主题切换功能暂时禁用。`);
+                localStorage.setItem('yunluo_grayscale_tip_shown', 'true');
+            }
+        } else {
+            document.body.classList.remove('grayscale-mode');
+            themeToggleButton.disabled = false;
+        }
+        
+        // d. 恢复正常主题图标（如果不是灰色模式）
+        if (!document.body.classList.contains('grayscale-mode')) {
+            const savedTheme = localStorage.getItem(THEME_KEY);
+            applyTheme(savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+        }
+    }
+    // --- 纪念人物系统逻辑 END ---
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        
+        // 核心：在DOM加载完成后立即检查并应用纪念模式
+        initMemorialSystem();
+        
+        // 正常主题初始化逻辑（仅在非悼念日生效）
+        const isGrayscaleMode = document.body.classList.contains('grayscale-mode');
+        if (!isGrayscaleMode) {
+            const savedTheme = localStorage.getItem(THEME_KEY), prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+        }
+
+        const savedApi = localStorage.getItem(API_PREFERENCE_KEY);
+        if (savedApi && API_CONFIG[savedApi]) { apiSelector.value = savedApi; } else { apiSelector.value = 'yanxuan'; }
+        
+        fetchYiyan(); loadHistory(); updateApiSelectionUI(); handleFormatChange(currentUrlFormat); fetchVisitorCount();
+        if (localStorage.getItem(VERSION_KEY) !== CURRENT_APP_VERSION) { showChangelogDialog(); }
+        
+        // 如果历史记录中没有文件，强制折叠
+        if ($('#historyEmptyTip')) { setHistoryCollapseState(true); }
+
+        apiSelectorButton.addEventListener('click', showApiSelectorDialog);
+        imageUpload.addEventListener('change', e => handleFileSelect(e.target.files[0]));
+        uploadButton.addEventListener('click', uploadFile); 
+        refreshYiyanButton.addEventListener('click', fetchYiyan); 
+        clearHistoryButton.addEventListener('click', clearAllHistory); 
+        
+        // 调整主题切换逻辑，在悼念日禁用
+        themeToggleButton.addEventListener('click', () => {
+            if (!document.body.classList.contains('grayscale-mode')) {
+                applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
+            } else {
+                showSnackbar('悼念日已启用灰色模式，主题切换暂时禁用。');
+            }
+        });
+        
+        // 新增：关闭悼念模式按钮按钮事件 (使用 todayMemorialFigures)
+        closeMemorialButton.addEventListener('click', (e) => {
+            e.stopPropagation(); // 阻止事件冒泡，以免干扰其他点击事件
+            if (todayMemorialFigures.length > 0) {
+                closeMemorialMode(todayMemorialFigures);
+            }
+        });
+
+        // 新增：双击横幅显示多人物列表
+        memorialBanner.addEventListener('dblclick', () => {
+            if (todayMemorialFigures.length > 0) {
+                showMultipleMemorialDialog(todayMemorialFigures);
+            }
+        });
+        
+        // 修复: 历史记录切换逻辑
+        toggleHistoryButton.addEventListener('click', () => setHistoryCollapseState(!historyList.classList.contains('hidden')));
+        
+        copyUrlButton.addEventListener('click', () => copyToClipboard(resultUrlDisplay.textContent, `已复制 ${currentUrlFormat.toUpperCase()} 格式链接`));
+        enhanceImageButton.addEventListener('click', () => {
+            if (uploadedUrl && selectedFile) {
+                const isImage = selectedFile.type.startsWith('image/');
+                if (isImage) {
+                    enhanceImage(uploadedUrl, selectedFile.name);
+                } else {
+                     showSnackbar('AI 增强仅支持图片文件');
+                }
+            }
+        });
+        
+        urlFormatSelector.querySelectorAll('.chip').forEach(chip => { chip.addEventListener('click', function() { handleFormatChange(this.dataset.format); }); });
+        ['dragenter','dragover','dragleave','drop'].forEach(eName=>uploadArea.addEventListener(eName, e=>{e.preventDefault();e.stopPropagation();}, false));
+        ['dragenter','dragover'].forEach(eName=>uploadArea.addEventListener(eName, ()=>{ uploadArea.classList.add('dragover'); uploadTip.textContent = '松开即可选择文件'; }, false));
+        ['dragleave','drop'].forEach(eName=>uploadArea.addEventListener(eName, ()=>{ uploadArea.classList.remove('dragover'); uploadTip.textContent = selectedFile ? `文件已就绪: ${truncateFilename(selectedFile.name, 28)}` : '拖拽文件到这里或'; }, false));
+        uploadArea.addEventListener('drop', e => handleFileSelect(e.dataTransfer.files[0]));
+        
+        historyList.addEventListener('click', e => {
+            const target = e.target;
+            const deleteBtn = target.closest('.delete-button');
+            const enhanceBtn = target.closest('.enhance-button');
+            const openBtn = target.closest('.open-button');
+            const copyArea = target.closest('.history-item-info, .history-item-thumb');
+            
+            if (deleteBtn) { 
+                const { url, name } = deleteBtn.dataset; 
+                showDialog({ 
+                    title: '确认删除', 
+                    content: `确定要删除 "${name}" 吗？`, 
+                    buttons: [
+                        { text: '取消' },
+                        { text: '确定', onClick: () => deleteHistoryItem(url) }
+                    ] 
+                });
+            } else if (enhanceBtn) { 
+                const { url, name } = enhanceBtn.dataset; 
+                enhanceImage(url, name);
+            } else if (openBtn) { 
+                const { url } = openBtn.dataset;
+                window.open(url, '_blank');
+            } else if (copyArea) { 
+                const { url, name } = copyArea.parentElement.querySelector('.history-item-info').dataset; 
+                copyToClipboard(getFormattedUrl(url, name, 'url'), '历史文件 URL 已复制'); 
+            }
+        });
+    });
+</script>
+</body>
+</html>
