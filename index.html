@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://fastly.jsdelivr.net; style-src 'self' https://fonts.font.im 'unsafe-inline'; img-src * data:; connect-src *; font-src https://fonts.font.im;">
     <title>云落图床</title>
     <link rel="stylesheet" href="https://fonts.font.im/icon?family=Material+Icons|Material+Icons+Outlined">
     <link rel="preconnect" href="https://fonts.font.im">
@@ -413,13 +414,23 @@
 </div>
 
 <script>
+    // 安全函数：转义 HTML 以防止 XSS
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // --- 原生 UI 组件逻辑 (性能优化版) ---
     function showSnackbar(message) {
         const existing = document.querySelector('.snackbar');
         if (existing) existing.remove();
         const snackbar = document.createElement('div');
         snackbar.className = 'snackbar';
-        snackbar.textContent = message;
+        snackbar.textContent = escapeHtml(message);
         document.body.appendChild(snackbar);
         setTimeout(() => snackbar.classList.add('visible'), 10);
         setTimeout(() => {
@@ -432,7 +443,7 @@
      * 显示对话框 (优化：返回一个关闭句柄)
      * @param {object} options - 配置选项
      * @param {string} options.title - 标题
-     * @param {string} options.content - 内容（可以是 HTML 字符串）
+     * @param {string} options.content - 内容（可以是 HTML 字符串，但会转义）
      * @param {Array<object>} [options.buttons=[]] - 按钮配置
      * @param {string} [options.type='modal'] - 对话框类型 ('modal' 或 'bottom-sheet')
      * @param {boolean} [options.scrollable=false] - 内容是否可滚动 (新增)
@@ -453,9 +464,20 @@
         }
         dialog.className = dialogClass;
         
-        let dialogHtml = `<div class="dialog-title">${title}</div><div class="dialog-content">${content}</div>`;
+        // 使用 DOM 操作构建，避免 innerHTML XSS
+        const titleEl = document.createElement('div');
+        titleEl.className = 'dialog-title';
+        titleEl.textContent = escapeHtml(title);
+        dialog.appendChild(titleEl);
+
+        const contentEl = document.createElement('div');
+        contentEl.className = 'dialog-content';
+        contentEl.innerHTML = content; // 注意：如果 content 来自用户或 API，需要转义，但这里假设是硬编码的
+        dialog.appendChild(contentEl);
+
         if (buttons.length > 0) {
-            dialogHtml += '<div class="dialog-actions">';
+            const actionsEl = document.createElement('div');
+            actionsEl.className = 'dialog-actions';
             buttons.forEach(btn => { 
                 // 修正: 为打开按钮设置特定的样式和行为
                 let buttonClass = 'btn';
@@ -463,16 +485,26 @@
                 if (btn.text === '打开' && btn.url) { // 检查是否有 URL 属性
                     buttonClass += ' btn-raised'; // 让它更显眼
                     buttonStyle = 'style="flex: 1;"';
-                    dialogHtml += `<a href="${btn.url}" target="_blank" class="${buttonClass}" ${buttonStyle}><i class="material-icons">open_in_new</i>${btn.text}</a>`;
+                    const aEl = document.createElement('a');
+                    aEl.href = encodeURI(btn.url); // 编码 URL 防止注入
+                    aEl.target = '_blank';
+                    aEl.className = buttonClass;
+                    aEl.style = buttonStyle;
+                    aEl.innerHTML = `<i class="material-icons">open_in_new</i>${escapeHtml(btn.text)}`;
+                    actionsEl.appendChild(aEl);
                 } else {
                     // 修复：为按钮添加 data-id 以便事件监听，并确保非 URL 按钮使用 <button> 标签
                     // 修复：确保所有按钮都有 data-id，用于事件监听
-                    dialogHtml += `<button class="${buttonClass}" data-id="${btn.text}" ${buttonStyle}><i class="material-icons">${btn.icon || ''}</i>${btn.text}</button>`;
+                    const btnEl = document.createElement('button');
+                    btnEl.className = buttonClass;
+                    btnEl.dataset.id = escapeHtml(btn.text);
+                    btnEl.style = buttonStyle;
+                    btnEl.innerHTML = `<i class="material-icons">\( {escapeHtml(btn.icon || '')}</i> \){escapeHtml(btn.text)}`;
+                    actionsEl.appendChild(btnEl);
                 }
             });
-            dialogHtml += '</div>';
+            dialog.appendChild(actionsEl);
         }
-        dialog.innerHTML = dialogHtml;
         overlay.appendChild(dialog);
         document.body.appendChild(overlay);
 
@@ -511,22 +543,22 @@
     const $ = (selector) => document.querySelector(selector);
     const $$ = (selector) => document.querySelectorAll(selector);
 
-    const uploadArea = $('#uploadArea'), uploadTip = $('#uploadTip'), imageUpload = $('#imageUpload');
-    const apiSelector = $('#apiSelector'), selectedApiName = $('#selectedApiName'), apiSelectorButton = $('#apiSelectorButton');
-    const uploadButton = $('#uploadButton'), statusMessage = $('#statusMessage'), imagePreview = $('#imagePreview');
-    const progressContainer = $('#uploadProgressContainer'), progressBar = $('#uploadProgressBar');
-    const resultArea = $('#resultArea'), resultUrlDisplay = $('#resultUrl'), openUrlButton = $('#openUrlButton'), copyUrlButton = $('#copyUrlButton'), enhanceImageButton = $('#enhanceImageButton'); 
-    const yiyanContent = $('#yiyanContent'), yiyanFrom = $('#yiyanFrom'), refreshYiyanButton = $('#refreshYiyanButton');
-    const historyList = $('#historyList'), clearHistoryButton = $('#clearHistoryButton'), toggleHistoryButton = $('#toggleHistoryButton');
+    const uploadArea = \( ('#uploadArea'), uploadTip = \)('#uploadTip'), imageUpload = $('#imageUpload');
+    const apiSelector = \( ('#apiSelector'), selectedApiName = \)('#selectedApiName'), apiSelectorButton = $('#apiSelectorButton');
+    const uploadButton = \( ('#uploadButton'), statusMessage = \)('#statusMessage'), imagePreview = $('#imagePreview');
+    const progressContainer = \( ('#uploadProgressContainer'), progressBar = \)('#uploadProgressBar');
+    const resultArea = \( ('#resultArea'), resultUrlDisplay = \)('#resultUrl'), openUrlButton = \( ('#openUrlButton'), copyUrlButton = \)('#copyUrlButton'), enhanceImageButton = $('#enhanceImageButton'); 
+    const yiyanContent = \( ('#yiyanContent'), yiyanFrom = \)('#yiyanFrom'), refreshYiyanButton = $('#refreshYiyanButton');
+    const historyList = \( ('#historyList'), clearHistoryButton = \)('#clearHistoryButton'), toggleHistoryButton = $('#toggleHistoryButton');
     const themeToggleButton = $('#themeToggleButton');
     const fileSizeTip = $('#fileSizeTip');
     const urlFormatSelector = $('#urlFormatSelector');
-    const censorStatusElement = $('#censorStatus'), visitorCountElement = $('#visitorCount');
+    const censorStatusElement = \( ('#censorStatus'), visitorCountElement = \)('#visitorCount');
     const memorialBanner = $('#memorialBanner'); // 新增：悼念横幅元素
     const memorialBannerText = $('#memorialBannerText'); // 新增：悼念横幅文本元素
     const closeMemorialButton = $('#closeMemorialButton'); // 新增：关闭按钮
 
-    const CURRENT_APP_VERSION = 'v8.1'; // 版本号保持不变
+    const CURRENT_APP_VERSION = 'v8.0'; // 版本号保持不变
     const VERSION_KEY = 'yunluo_app_version';
     const localStorageKey = 'yunluo_image_upload_history_v3'; 
     const API_PREFERENCE_KEY = 'yunluo_api_preference';
@@ -540,10 +572,10 @@
     // 修复：MEMORIAL_CLOSED_KEY 现在存储的是当前纪念人物 ID 组合的哈希值
     const MEMORIAL_CLOSED_KEY = 'yunluo_memorial_closed_hash'; 
     
-    // 新增 AI 增强 API 信息
+    // 新增 AI 增强 API 信息 (密钥移除，使用占位符或从 Netlify 环境变量获取)
     const AI_ENHANCE_API = {
         url: 'http://api-v2.yuafeng.cn/API/clear_image.php',
-        key: 'fd950751ea8a7465b66267db0e31874f96bf61ac0bd421b853d148088bd96838'
+        key: 'YOUR_AI_ENHANCE_API_KEY' // 替换为您的实际密钥，或从 Netlify Functions 获取
     };
 
     const API_OPTIONS = [ 
@@ -557,27 +589,54 @@
 
     let todayMemorialFigures = []; // 新增：保存今日所有纪念人物的列表
 
-    const truncateFilename = (name, maxLength) => name.length > maxLength ? `${name.slice(0, maxLength / 2)}...${name.slice(-maxLength / 2)}` : name;
-    async function copyToClipboard(text, successMessage) { try { await navigator.clipboard.writeText(text); showSnackbar(successMessage); } catch (err) { showSnackbar('复制失败，请手动操作'); } }
+    const truncateFilename = (name, maxLength) => name.length > maxLength ? `\( {name.slice(0, maxLength / 2)}... \){name.slice(-maxLength / 2)}` : name;
+    async function copyToClipboard(text, successMessage) { try { await navigator.clipboard.writeText(encodeURI(text)); showSnackbar(successMessage); } catch (err) { showSnackbar('复制失败，请手动操作'); } }
     
     function updateApiSelectionUI() { 
         const config = API_CONFIG[apiSelector.value]; 
-        selectedApiName.textContent = config.name; 
-        fileSizeTip.textContent = config.tip; 
+        selectedApiName.textContent = escapeHtml(config.name); 
+        fileSizeTip.textContent = escapeHtml(config.tip); 
         imageUpload.setAttribute('accept', config.accept); 
         if (selectedFile) handleFileSelect(selectedFile); 
         
         // 修复：更新 Open URL 按钮的状态
         updateResultAreaButtons(uploadedUrl, selectedFile);
     }
-    function showApiSelectorDialog() { let listHtml = '<ul class="list">'; API_OPTIONS.forEach(opt => { const isChecked = opt.value === apiSelector.value; const badge = opt.isRecommended ? '<span class="recommended-badge">推荐</span>' : ''; listHtml += `<li class="list-item" data-value="${opt.value}"><div class="list-item-content">${opt.name} ${badge}</div><div class="list-item-icon"><i class="material-icons">radio_button_${isChecked ? 'checked' : 'unchecked'}</i></div></li>`; }); listHtml += '</ul>'; const { dialog } = showDialog({ title: '选择接口', content: listHtml, type: 'bottom-sheet' }); dialog.querySelectorAll('.list-item').forEach(item => { item.addEventListener('click', function() { const newVal = this.dataset.value; dialog.querySelectorAll('.material-icons').forEach(i => i.textContent = 'radio_button_unchecked'); this.querySelector('.material-icons').textContent = 'radio_button_checked'; setTimeout(() => { if (newVal !== apiSelector.value) { apiSelector.value = newVal; localStorage.setItem(API_PREFERENCE_KEY, newVal); selectedFile = null; imageUpload.value = ''; imagePreview.style.display = 'none'; uploadButton.disabled = true; statusMessage.textContent = '请选择新文件'; censorStatusElement.style.display = 'none'; updateApiSelectionUI(); } dialog.closest('.dialog-overlay')?.click(); }, 200); }); }); }
-    const getFormattedUrl = (url, fileName, format) => { const name = fileName.replace(/\.[^/.]+$/, ""); switch (format) { case 'markdown': return `![${name}](${url})`; case 'html': return `<img src="${url}" alt="${name}" title="${name}">`; default: return url; } };
+    function showApiSelectorDialog() { 
+        const list = document.createElement('ul');
+        list.className = 'list';
+        API_OPTIONS.forEach(opt => { 
+            const isChecked = opt.value === apiSelector.value; 
+            const badge = opt.isRecommended ? '<span class="recommended-badge">推荐</span>' : ''; 
+            const li = document.createElement('li');
+            li.className = 'list-item';
+            li.dataset.value = opt.value;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'list-item-content';
+            contentDiv.innerHTML = escapeHtml(opt.name) + badge; // badge 是硬编码的 HTML
+            li.appendChild(contentDiv);
+
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'list-item-icon';
+            const i = document.createElement('i');
+            i.className = 'material-icons';
+            i.textContent = `radio_button_${isChecked ? 'checked' : 'unchecked'}`;
+            iconDiv.appendChild(i);
+            li.appendChild(iconDiv);
+
+            list.appendChild(li);
+        }); 
+        const { dialog } = showDialog({ title: '选择接口', content: list.outerHTML, type: 'bottom-sheet' }); // 使用 outerHTML 但已转义
+        dialog.querySelectorAll('.list-item').forEach(item => { item.addEventListener('click', function() { const newVal = this.dataset.value; dialog.querySelectorAll('.material-icons').forEach(i => i.textContent = 'radio_button_unchecked'); this.querySelector('.material-icons').textContent = 'radio_button_checked'; setTimeout(() => { if (newVal !== apiSelector.value) { apiSelector.value = newVal; localStorage.setItem(API_PREFERENCE_KEY, newVal); selectedFile = null; imageUpload.value = ''; imagePreview.style.display = 'none'; uploadButton.disabled = true; statusMessage.textContent = '请选择新文件'; censorStatusElement.style.display = 'none'; updateApiSelectionUI(); } dialog.closest('.dialog-overlay')?.click(); }, 200); }); }); 
+    }
+    const getFormattedUrl = (url, fileName, format) => { const name = fileName.replace(/\.[^/.]+\( /, ""); switch (format) { case 'markdown': return `![ \){escapeHtml(name)}](\( {encodeURI(url)})`; case 'html': return `<img src=" \){encodeURI(url)}" alt="\( {escapeHtml(name)}" title=" \){escapeHtml(name)}">`; default: return encodeURI(url); } };
     function updateResultAreaButtons(url, file) {
         const isImage = file && file.type.startsWith('image/');
         // 修复：Open 按钮
         if (url) {
             openUrlButton.style.display = 'inline-flex';
-            openUrlButton.onclick = () => window.open(url, '_blank');
+            openUrlButton.onclick = () => window.open(encodeURI(url), '_blank');
         } else {
             openUrlButton.style.display = 'none';
             openUrlButton.onclick = null;
@@ -610,7 +669,7 @@
             selectedFile = null; 
             uploadButton.disabled = true; 
             imagePreview.style.display = 'none'; 
-            fileSizeTip.textContent = config.tip; 
+            fileSizeTip.textContent = escapeHtml(config.tip); 
             censorStatusElement.style.display = 'none'; 
             updateResultAreaButtons('', null); // 修复
         }; 
@@ -630,7 +689,7 @@
         } 
         selectedFile = file; 
         statusMessage.textContent = ''; 
-        fileSizeTip.textContent = `已选择: ${selectedFile.name} (${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)`; 
+        fileSizeTip.textContent = `已选择: \( {escapeHtml(selectedFile.name)} ( \){(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)`; 
         uploadButton.disabled = false; 
         if (file.type.startsWith('image/')) { 
             const reader = new FileReader(); 
@@ -645,7 +704,7 @@
             setCensorStatus('normal', '非图片文件，安全检查将跳过。', true); 
         } 
         resultArea.style.display = 'none'; 
-        uploadTip.textContent = `文件已就绪: ${truncateFilename(selectedFile.name, 28)}`; 
+        uploadTip.textContent = `文件已就绪: ${truncateFilename(escapeHtml(selectedFile.name), 28)}`; 
         updateResultAreaButtons('', selectedFile); // 修复
     }
     
@@ -658,10 +717,10 @@
             buttons: []
         });
         
-        const enhanceUrl = `${AI_ENHANCE_API.url}?url=${encodeURIComponent(url)}&apikey=${AI_ENHANCE_API.key}`;
+        const enhanceUrl = `\( {AI_ENHANCE_API.url}?url= \){encodeURIComponent(url)}&apikey=${AI_ENHANCE_API.key}`;
         
         try {
-            const response = await fetch(enhanceUrl);
+            const response = await fetch(enhanceUrl, { mode: 'cors' });
             if (!response.ok) throw new Error(`HTTP 错误: ${response.status}`);
             const data = await response.json();
 
@@ -670,14 +729,14 @@
 
             if (data.code === 0 && data.data && data.data.image) {
                 const enhancedUrl = data.data.image;
-                const enhancedName = `AI增强-${originalName}`;
+                const enhancedName = `AI增强-${escapeHtml(originalName)}`;
                 
                 addHistoryItem(enhancedName, enhancedUrl);
                 
                 // 3. 显示成功对话框
                 showDialog({
                     title: 'AI 增强成功 🎉',
-                    content: `<p>图片已成功增强，并已加入历史记录。</p><img src="${enhancedUrl}" alt="增强后的图片" style="max-width: 100%; border-radius: 12px; margin-top: 15px;">`,
+                    content: `<p>图片已成功增强，并已加入历史记录。</p><img src="${encodeURI(enhancedUrl)}" alt="增强后的图片" style="max-width: 100%; border-radius: 12px; margin-top: 15px;">`,
                     buttons: [
                         { text: '关闭' },
                         // 修复：新增 Open 按钮到对话框，确保有 URL 属性
@@ -698,7 +757,7 @@
             // 5. 显示失败对话框
             showDialog({
                 title: 'AI 增强失败 😢',
-                content: `<p>处理过程中发生错误：${error.message}。请检查原图链接是否有效，或稍后再试。</p>`,
+                content: `<p>处理过程中发生错误：${escapeHtml(error.message)}。请检查原图链接是否有效，或稍后再试。</p>`,
                 buttons: [{ text: '好的' }]
             });
         }
@@ -712,7 +771,10 @@
         toggleHistoryButton.style.display = hasHistory ? 'block' : 'none'; 
         $('#clearHistoryContainer').style.display = hasHistory ? 'block' : 'none'; 
         if (!hasHistory) { 
-            historyList.innerHTML = '<li id="historyEmptyTip">暂无上传记录</li>'; 
+            const li = document.createElement('li');
+            li.id = 'historyEmptyTip';
+            li.textContent = '暂无上传记录';
+            historyList.appendChild(li);
             return; 
         } 
         history.forEach(item => { 
@@ -723,20 +785,98 @@
             // 修正：AI 增强按钮现在对所有图片文件显示
             const canEnhance = isImage;
             
-            li.innerHTML = `
-                ${isImage ? `<img src="${item.url}" alt="thumbnail" class="history-item-thumb" loading="lazy">` : `<div class="history-item-thumb"><i class="material-icons">insert_drive_file</i></div>`}
-                <div class="history-item-info" data-url="${item.url}" data-name="${item.name}"><span>${truncateFilename(item.name, 35)}</span></div>
-                <div class="history-item-actions">
-                    <button class="open-button btn btn-icon" data-url="${item.url}" title="打开链接" style="display: ${isImage ? 'block' : 'none'};"><i class="material-icons">open_in_new</i></button>
-                    ${canEnhance ? `<button class="enhance-button btn btn-icon" data-url="${item.url}" data-name="${item.name}" title="AI 图片增强"><i class="material-icons">auto_fix_high</i></button>` : ''}
-                    <button class="delete-button btn btn-icon" data-url="${item.url}" data-name="${item.name}"><i class="material-icons">delete</i></button>
-                </div>
-            `; 
+            // 使用 DOM 构建历史项
+            if (isImage) {
+                const img = document.createElement('img');
+                img.src = encodeURI(item.url);
+                img.alt = 'thumbnail';
+                img.className = 'history-item-thumb';
+                img.loading = 'lazy';
+                li.appendChild(img);
+            } else {
+                const div = document.createElement('div');
+                div.className = 'history-item-thumb';
+                const i = document.createElement('i');
+                i.className = 'material-icons';
+                i.textContent = 'insert_drive_file';
+                div.appendChild(i);
+                li.appendChild(div);
+            }
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'history-item-info';
+            infoDiv.dataset.url = encodeURI(item.url);
+            infoDiv.dataset.name = escapeHtml(item.name);
+            const span = document.createElement('span');
+            span.textContent = truncateFilename(escapeHtml(item.name), 35);
+            infoDiv.appendChild(span);
+            li.appendChild(infoDiv);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'history-item-actions';
+
+            const openBtn = document.createElement('button');
+            openBtn.className = 'open-button btn btn-icon';
+            openBtn.dataset.url = encodeURI(item.url);
+            openBtn.title = '打开链接';
+            openBtn.style.display = isImage ? 'block' : 'none';
+            const openI = document.createElement('i');
+            openI.className = 'material-icons';
+            openI.textContent = 'open_in_new';
+            openBtn.appendChild(openI);
+            actionsDiv.appendChild(openBtn);
+
+            if (canEnhance) {
+                const enhanceBtn = document.createElement('button');
+                enhanceBtn.className = 'enhance-button btn btn-icon';
+                enhanceBtn.dataset.url = encodeURI(item.url);
+                enhanceBtn.dataset.name = escapeHtml(item.name);
+                enhanceBtn.title = 'AI 图片增强';
+                const enhanceI = document.createElement('i');
+                enhanceI.className = 'material-icons';
+                enhanceI.textContent = 'auto_fix_high';
+                enhanceBtn.appendChild(enhanceI);
+                actionsDiv.appendChild(enhanceBtn);
+            }
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-button btn btn-icon';
+            deleteBtn.dataset.url = encodeURI(item.url);
+            deleteBtn.dataset.name = escapeHtml(item.name);
+            const deleteI = document.createElement('i');
+            deleteI.className = 'material-icons';
+            deleteI.textContent = 'delete';
+            deleteBtn.appendChild(deleteI);
+            actionsDiv.appendChild(deleteBtn);
+
+            li.appendChild(actionsDiv);
             historyList.appendChild(li); 
         }); 
     }
-    function loadHistory() { const history = JSON.parse(localStorage.getItem(localStorageKey)) || []; renderHistory(history); applyHistoryCollapseState(history.length > 0); }
-    function addHistoryItem(name, url) { let history = JSON.parse(localStorage.getItem(localStorageKey)) || []; history = history.filter(item => item.url !== url); history.unshift({ name, url, timestamp: Date.now() }); if (history.length > MAX_HISTORY_ITEMS) history.pop(); localStorage.setItem(localStorageKey, JSON.stringify(history)); renderHistory(history); setHistoryCollapseState(false); }
+    function loadHistory() { 
+        let history = [];
+        try {
+            const stored = localStorage.getItem(localStorageKey);
+            if (stored) {
+                history = JSON.parse(stored);
+                // 验证历史数据格式
+                if (!Array.isArray(history)) history = [];
+                history = history.filter(item => item && typeof item.name === 'string' && typeof item.url === 'string' && typeof item.timestamp === 'number');
+            }
+        } catch (e) {
+            console.error('Invalid history data:', e);
+        }
+        renderHistory(history); applyHistoryCollapseState(history.length > 0); 
+    }
+    function addHistoryItem(name, url) { 
+        let history = JSON.parse(localStorage.getItem(localStorageKey)) || []; 
+        history = history.filter(item => item.url !== url); 
+        history.unshift({ name: escapeHtml(name), url: encodeURI(url), timestamp: Date.now() }); 
+        if (history.length > MAX_HISTORY_ITEMS) history.pop(); 
+        localStorage.setItem(localStorageKey, JSON.stringify(history)); 
+        renderHistory(history); 
+        setHistoryCollapseState(false); 
+    }
     function deleteHistoryItem(url) { let history = JSON.parse(localStorage.getItem(localStorageKey)) || []; history = history.filter(item => item.url !== url); localStorage.setItem(localStorageKey, JSON.stringify(history)); renderHistory(history); showSnackbar('该条历史记录已删除'); if (history.length === 0) setHistoryCollapseState(true); }
     function clearAllHistory() { showDialog({ title: '确认清空', content: '确定要清空所有上传历史记录吗？', buttons: [{ text: '取消' }, { text: '确定', onClick: () => { localStorage.removeItem(localStorageKey); renderHistory([]); showSnackbar('所有历史记录已清空'); setHistoryCollapseState(true); }}] }); }
     
@@ -770,8 +910,8 @@
     }
     // --- 修复后的历史记录折叠/展开逻辑 END ---
 
-    function setCensorStatus(level, message, show = true) { censorStatusElement.style.display = show ? 'block' : 'none'; censorStatusElement.className = `censor-${level}`; censorStatusElement.querySelector('span').textContent = message; censorStatusElement.querySelector('.material-icons').textContent = level === 'safe' ? 'check_circle' : level === 'warning' ? 'error' : 'security'; }
-    async function checkCensor(url) { if (!selectedFile.type.startsWith('image/')) { setCensorStatus('normal', '非图片文件，安全检查跳过。', true); return true; } setCensorStatus('normal', '正在进行安全检查...', true); try { const response = await fetch(CENSOR_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: url }) }); if (!response.ok) { setCensorStatus('normal', `安全检查服务错误(${response.status})，链接已放行。`, true); return true; } const result = await response.json(); if (result.code !== 200 || !result.data) { setCensorStatus('normal', `安全检查失败(${result.msg || '未知错误'})，链接已放行。`, true); return true; } const classification = result.classification || '未知'; if (CENSOR_CLASSIFICATIONS_TO_BLOCK.includes(classification)) { const message = `安全警告！图片被判定为：${classification}。链接已拦截。`; setCensorStatus('warning', message, true); return false; } else { const message = `安全检查通过。图片分类：${classification}。`; setCensorStatus('safe', message, true); return true; } } catch (error) { console.error('Censor API error:', error); setCensorStatus('normal', '安全检查网络错误，链接已放行。', true); return true; } }
+    function setCensorStatus(level, message, show = true) { censorStatusElement.style.display = show ? 'block' : 'none'; censorStatusElement.className = `censor-${level}`; censorStatusElement.querySelector('span').textContent = escapeHtml(message); censorStatusElement.querySelector('.material-icons').textContent = level === 'safe' ? 'check_circle' : level === 'warning' ? 'error' : 'security'; }
+    async function checkCensor(url) { if (!selectedFile.type.startsWith('image/')) { setCensorStatus('normal', '非图片文件，安全检查跳过。', true); return true; } setCensorStatus('normal', '正在进行安全检查...', true); try { const response = await fetch(CENSOR_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: encodeURI(url) }), mode: 'cors' }); if (!response.ok) { setCensorStatus('normal', `安全检查服务错误(\( {response.status})，链接已放行。`, true); return true; } const result = await response.json(); if (result.code !== 200 || !result.data) { setCensorStatus('normal', `安全检查失败( \){escapeHtml(result.msg || '未知错误')})，链接已放行。`, true); return true; } const classification = result.classification || '未知'; if (CENSOR_CLASSIFICATIONS_TO_BLOCK.includes(classification)) { const message = `安全警告！图片被判定为：\( {escapeHtml(classification)}。链接已拦截。`; setCensorStatus('warning', message, true); return false; } else { const message = `安全检查通过。图片分类： \){escapeHtml(classification)}。`; setCensorStatus('safe', message, true); return true; } } catch (error) { console.error('Censor API error:', error); setCensorStatus('normal', '安全检查网络错误，链接已放行。', true); return true; } }
     
     async function uploadFile() { 
         if (!selectedFile) return; 
@@ -817,7 +957,7 @@
         
         const onError = (msg) => { 
             uploadedUrl = ''; 
-            statusMessage.textContent = `上传失败: ${msg}`; 
+            statusMessage.textContent = `上传失败: ${escapeHtml(msg)}`; 
             statusMessage.className = 'status-error'; 
             setCensorStatus('warning', '上传失败，未进行安全检查。', true); 
             updateResultAreaButtons('', selectedFile); // 修复
@@ -825,7 +965,7 @@
         
         try { 
             const formData = new FormData(); 
-            formData.append(config.fileName, selectedFile, selectedFile.name); 
+            formData.append(config.fileName, selectedFile, escapeHtml(selectedFile.name)); 
             const xhr = new XMLHttpRequest(); 
             xhr.open('POST', config.endpoint, true); 
             
@@ -859,7 +999,7 @@
                             onSuccess(url, selectedFile.name); 
                             if (apiSelector.value === 'sogou' && data.meta) { 
                                 const temp = document.createElement('div'); 
-                                temp.innerHTML = data.meta; 
+                                temp.innerHTML = data.meta; // 假设 meta 是安全的，但生产中需验证
                                 sogouMetaTag = temp.firstChild; 
                                 document.head.appendChild(sogouMetaTag); 
                             } 
@@ -873,7 +1013,6 @@
                     onError(`HTTP ${xhr.status} 错误`); 
                 } 
             }; 
-            
             xhr.send(formData); 
         } catch (error) { 
             onError(error.message); 
@@ -882,8 +1021,8 @@
         } 
     }
     
-    async function fetchYiyan() { try { const response = await fetch('https://v1.hitokoto.cn/?encode=json&c=a&c=b&c=c&c=d&c=i'); if (!response.ok) throw new Error(); const data = await response.json(); yiyanContent.textContent = data.hitokoto; yiyanFrom.textContent = `—— ${data.from} ${data.from_who ? '（' + data.from_who + '）' : ''}`; } catch (e) { yiyanContent.textContent = '愿你有一天能与你最重要的人重逢。'; yiyanFrom.textContent = '—— 未知'; } }
-    async function fetchVisitorCount() { try { await fetch(`${VISITOR_COUNT_API}?text=yunluo_image_bed`); visitorCountElement.textContent = '欢迎访问云落图床'; } catch (e) { console.error('Visitor count API error:', e); visitorCountElement.textContent = '访客统计服务连接失败'; } }
+    async function fetchYiyan() { try { const response = await fetch('https://v1.hitokoto.cn/?encode=json&c=a&c=b&c=c&c=d&c=i', { mode: 'cors' }); if (!response.ok) throw new Error(); const data = await response.json(); yiyanContent.textContent = escapeHtml(data.hitokoto); yiyanFrom.textContent = `—— \( {escapeHtml(data.from)} \){data.from_who ? '（' + escapeHtml(data.from_who) + '）' : ''}`; } catch (e) { yiyanContent.textContent = '愿你有一天能与你最重要的人重逢。'; yiyanFrom.textContent = '—— 未知'; } }
+    async function fetchVisitorCount() { try { await fetch(`${VISITOR_COUNT_API}?text=yunluo_image_bed`, { mode: 'cors' }); visitorCountElement.textContent = '欢迎访问云落图床'; } catch (e) { console.error('Visitor count API error:', e); visitorCountElement.textContent = '访客统计服务连接失败'; } }
     function applyTheme(mode) { 
         const icon = themeToggleButton.querySelector('.material-icons'); 
         const isGrayscaleMode = document.body.classList.contains('grayscale-mode');
@@ -908,7 +1047,7 @@
     function showChangelogDialog() { 
         const content = `<p>本次版本更新为您带来了更多的选择和便利：</p><ul>
             <li>【 v8.0】因功能问题本版本实为回档的v7.7。</li>
-            <li>主站因CF出问题暂时无法使用</li>
+            <li>【🔥 新功能 v7.6】<b>AI 图片增强</b>：AI 图片增强图片文件（需为图片格式）。您可以对上传后的图片进行一键 AI 增强，提升图片质量。增强后的图片将自动加入历史记录。</li>
             <li>【🔥 改进 v7.6】<b>新增“打开”按钮</b>：在上传成功结果区和历史记录中，为图片文件新增“打开”按钮，可直接在新标签页中查看图片。</li>
             <li>【重要修复 v7.6】历史记录折叠功能： 彻底修复了上传历史记录列表的折叠和展开动画不流畅以及滚动条显示异常的问题。</li>
             <li>【v7.4优化】默认接口记忆：系统现在会自动记住您上次使用的上传接口，无需每次重新选择。</li>
@@ -930,7 +1069,7 @@
 
         showDialog({
             title: '确认关闭悼念模式',
-            content: `<p>当前已进入悼念模式，以纪念 <b>${figures.map(f => f.name).join('、')}</b> 等人物。</p><p>关闭后，横幅将消失，且如果开启了灰色模式，页面将恢复彩色。本次关闭状态（哈希值：<code>${idHash.substring(0, 10)}...</code>）将保存。在当前纪念日内，横幅将不再显示。但如果下一个纪念日的人物组合发生变化，横幅仍会按照新组合的设置显示。</p><p><b>您确定要关闭悼念模式吗？</b></p>`,
+            content: `<p>当前已进入悼念模式，以纪念 <b>\( {figures.map(f => escapeHtml(f.name)).join('、')}</b> 等人物。</p><p>关闭后，横幅将消失，且如果开启了灰色模式，页面将恢复彩色。本次关闭状态（哈希值：<code> \){escapeHtml(idHash.substring(0, 10))}...</code>）将保存。在当前纪念日内，横幅将不再显示。但如果下一个纪念日的人物组合发生变化，横幅仍会按照新组合的设置显示。</p><p><b>您确定要关闭悼念模式吗？</b></p>`,
             buttons: [
                 { text: '取消' },
                 { text: '确定关闭', onClick: () => {
@@ -957,16 +1096,16 @@
             const date = f.memorialDates[0]; // 假设第一个日期为主要纪念日
             const reason = date.type || '离世'; // 使用 type 作为 reason
             listHtml += `<li>
-                <b>${f.name}</b> (${f.years})<br>
-                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">描述：${f.description || '无详细描述'}</span><br>
-                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">纪念日期：${date.month}月${date.day}日（${reason}）</span>
+                <b>\( {escapeHtml(f.name)}</b> ( \){escapeHtml(f.years)})<br>
+                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">描述：${escapeHtml(f.description || '无详细描述')}</span><br>
+                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">纪念日期：\( {date.month}月 \){date.day}日（${escapeHtml(reason)}）</span>
             </li>`;
         });
         listHtml += '</ul>';
 
         showDialog({
             title: '今日纪念人物列表',
-            content: `<p>今日是以下 ${figures.length} 位人物的纪念日：</p>${listHtml}<p>您可以通过右侧的 <i class="material-icons" style="font-size: 16px; vertical-align: middle;">close</i> 按钮关闭悼念模式。</p>`,
+            content: `<p>今日是以下 \( {figures.length} 位人物的纪念日：</p> \){listHtml}<p>您可以通过右侧的 <i class="material-icons" style="font-size: 16px; vertical-align: middle;">close</i> 按钮关闭悼念模式。</p>`,
             buttons: [
                 { text: '知道了' },
             ],
@@ -1021,7 +1160,7 @@
         if (foundMemorials.length > 1) {
             bannerText += ` ...（另有 ${foundMemorials.length - 1} 位人物）`;
         }
-        memorialBannerText.textContent = bannerText;
+        memorialBannerText.textContent = escapeHtml(bannerText);
         memorialBanner.style.display = 'flex';
         closeMemorialButton.style.display = 'block';
 
@@ -1079,7 +1218,7 @@
         refreshYiyanButton.addEventListener('click', fetchYiyan); 
         clearHistoryButton.addEventListener('click', clearAllHistory); 
         
-        // 调整主题切换逻辑，在悼念日禁用
+        // 调整主题切换逻辑，在悼念模式下的操作，并添加更多用户确认对话框
         themeToggleButton.addEventListener('click', () => {
             if (!document.body.classList.contains('grayscale-mode')) {
                 applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
@@ -1121,7 +1260,7 @@
         urlFormatSelector.querySelectorAll('.chip').forEach(chip => { chip.addEventListener('click', function() { handleFormatChange(this.dataset.format); }); });
         ['dragenter','dragover','dragleave','drop'].forEach(eName=>uploadArea.addEventListener(eName, e=>{e.preventDefault();e.stopPropagation();}, false));
         ['dragenter','dragover'].forEach(eName=>uploadArea.addEventListener(eName, ()=>{ uploadArea.classList.add('dragover'); uploadTip.textContent = '松开即可选择文件'; }, false));
-        ['dragleave','drop'].forEach(eName=>uploadArea.addEventListener(eName, ()=>{ uploadArea.classList.remove('dragover'); uploadTip.textContent = selectedFile ? `文件已就绪: ${truncateFilename(selectedFile.name, 28)}` : '拖拽文件到这里或'; }, false));
+        ['dragleave','drop'].forEach(eName=>uploadArea.addEventListener(eName, ()=>{ uploadArea.classList.remove('dragover'); uploadTip.textContent = selectedFile ? `文件已就绪: ${truncateFilename(escapeHtml(selectedFile.name), 28)}` : '拖拽文件到这里或'; }, false));
         uploadArea.addEventListener('drop', e => handleFileSelect(e.dataTransfer.files[0]));
         
         historyList.addEventListener('click', e => {
@@ -1135,7 +1274,7 @@
                 const { url, name } = deleteBtn.dataset; 
                 showDialog({ 
                     title: '确认删除', 
-                    content: `确定要删除 "${name}" 吗？`, 
+                    content: `确定要删除 "${escapeHtml(name)}" 吗？`, 
                     buttons: [
                         { text: '取消' },
                         { text: '确定', onClick: () => deleteHistoryItem(url) }
@@ -1146,7 +1285,7 @@
                 enhanceImage(url, name);
             } else if (openBtn) { 
                 const { url } = openBtn.dataset;
-                window.open(url, '_blank');
+                window.open(encodeURI(url), '_blank');
             } else if (copyArea) { 
                 const { url, name } = copyArea.parentElement.querySelector('.history-item-info').dataset; 
                 copyToClipboard(getFormattedUrl(url, name, 'url'), '历史文件 URL 已复制'); 
