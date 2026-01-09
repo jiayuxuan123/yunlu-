@@ -1,0 +1,9 @@
+{
+  "env": {
+    "VERCEL_ANALYTICS_ID": "@vercel_analytics_id"
+  },
+  "analytics": true,
+  "webAnalytics": {
+    "enabled": true
+  }
+}

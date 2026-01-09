@@ -9,6 +9,10 @@
     <script src="https://fastly.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="./memorial-data.js"></script>
+    <script>
+      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
     <style>
         /* --- 全局优化与重 --- */
         *, *::before, *::after {
@@ -1390,7 +1394,7 @@
             }
         });
 
-        // 新增：双击横幅显示多人物列表
+        // 新增：双击横��显示多人物列表
         memorialBanner.addEventListener('dblclick', () => {
             if (todayMemorialFigures.length > 0) {
                 showMultipleMemorialDialog(todayMemorialFigures);
