@@ -809,7 +809,7 @@
             selectedFile = null; 
             uploadButton.disabled = true; 
             imagePreview.style.display = 'none'; 
-            uploadTip.textContent = '拖拽文件到这里或'; 
+            uploadTip.textContent = '拖拽文���到这里或'; 
             return; 
         } 
         const config = API_CONFIG[apiSelector.value]; 
@@ -1378,7 +1378,7 @@
             if (!document.body.classList.contains('grayscale-mode')) {
                 applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
             } else {
-                showSnackbar('悼念日已启用灰色模式，主题切换暂时禁用。');
+                showSnackbar('悼念日已启用灰色模式���主题切换暂时禁用。');
             }
         });
         
@@ -1390,7 +1390,7 @@
             }
         });
 
-        // 新增：双击横幅显示多人物列表
+        // 新增：双击横��显示多人物列表
         memorialBanner.addEventListener('dblclick', () => {
             if (todayMemorialFigures.length > 0) {
                 showMultipleMemorialDialog(todayMemorialFigures);
@@ -1504,5 +1504,12 @@
         });
     });
 </script>
+
+<!-- Vercel Speed Insights -->
+<script>
+    window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/speed-insights/script.js"></script>
+
 </body>
 </html>
