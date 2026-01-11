@@ -3,1506 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>云落图床</title>
-    <link rel="stylesheet" href="https://fonts.font.im/icon?family=Material+Icons|Material+Icons+Outlined">
-    <link rel="preconnect" href="https://fonts.font.im">
-    <script src="https://fastly.jsdelivr.net/npm/js-sha256@0.9.0/src/sha256.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <script src="./memorial-data.js"></script>
+    <title>云落 - 极简工具聚合</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
-        /* --- 全局优化与重 --- */
-        *, *::before, *::after {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent; /* 移除移动端点击蓝色高亮 */
-        }
-
         :root {
-            /* 正常模式配色 */
-            --md-sys-color-primary: #0061a4;
-            --md-sys-color-on-primary: #ffffff;
-            --md-sys-color-primary-container: #d1e4ff;
-            --md-sys-color-on-primary-container: #001d36;
-            --md-sys-color-background: #f8f9fc;
-            --md-sys-color-on-background: #1a1c1e;
-            --md-sys-color-surface: #fdfcff;
-            --md-sys-color-on-surface: #1a1c1e;
-            --md-sys-color-surface-variant: #dfe3eb;
-            --md-sys-color-on-surface-variant: #42474e;
-            --md-sys-color-outline: #e0e2e8;
-            --md-sys-color-error: #ba1a1a;
-            --md-sys-color-success: #386a1e;
-            --transition-fast: 0.2s ease;
-            --transition-medium: 0.3s ease;
+            --m3-primary: #0b57d0; /* 谷歌标准蓝色 */
+            --m3-surface: #f8f9fa;
+            --m3-card: #ffffff;
+            --text-dark: #1f1f1f;
+            --text-light: #444746;
+            --m3-outline: #c4c7c5;
         }
 
-        body.dark-mode {
-            /* 正常模式-深色配色 */
-            --md-sys-color-primary: #9ecaff;
-            --md-sys-color-on-primary: #003258;
-            --md-sys-color-primary-container: #00497d;
-            --md-sys-color-on-primary-container: #d1e4ff;
-            --md-sys-color-background: #1a1c1e;
-            --md-sys-color-on-background: #e2e2e6;
-            --md-sys-color-surface: #25282d;
-            --md-sys-color-on-surface: #e2e2e6;
-            --md-sys-color-surface-variant: #42474e;
-            --md-sys-color-on-surface-variant: #c2c7cf;
-            --md-sys-color-outline: #3f4146;
-            --md-sys-color-error: #ffb4ab;
-            --md-sys-color-success: #a2d192;
-        }
-        
-        /* --- 悼念模式（灰色）配色方案 - 优化后，更护眼 --- */
-        body.grayscale-mode, body.grayscale-mode.dark-mode {
-            /* 浅色背景：高对比度、护眼灰 */
-            --md-sys-color-background: #f5f5f5; /* 柔和浅灰 */
-            --md-sys-color-on-background: #212121; /* 近黑，高对比度 */
-            
-            --md-sys-color-surface: #ffffff; /* 卡片背景：纯白，突出内容 */
-            --md-sys-color-on-surface: #212121;
-            --md-sys-color-surface-variant: #ededed; /* 默认卡片背景色/输入框背景 */
-            --md-sys-color-on-surface-variant: #616161; /* 次级文本/图标 */
-            
-            --md-sys-color-primary: #757575; /* 主要操作/按钮：中灰，庄重 */
-            --md-sys-color-on-primary: #ffffff;
-            --md-sys-color-primary-container: #e0e0e0; /* 浅灰容器 */
-            --md-sys-color-on-primary-container: #424242;
-            
-            --md-sys-color-outline: #bdbdbd; /* 边框/分割线 */
-            --md-sys-color-error: #757575; /* 灰色错误提示 */
-            --md-sys-color-success: #757575; /* 灰色成功提示 */
-            
-            /* filter: grayscale(100%); 移除以保证更好的 UI 兼容性和性能 */
-        }
-
-        /* 针对深色模式的灰色微调，使其在深色背景下仍为灰色，且保持舒适对比度 */
-        body.grayscale-mode.dark-mode {
-            --md-sys-color-background: #252525; /* 柔和深灰 */
-            --md-sys-color-on-background: #e0e0e0;
-            
-            --md-sys-color-surface: #363636;
-            --md-sys-color-on-surface: #e0e0e0;
-            --md-sys-color-surface-variant: #4a4a4a;
-            --md-sys-color-on-surface-variant: #a0a0a0;
-            
-            --md-sys-color-primary: #9e9e9e; /* 中性灰，作为主要色 */
-            --md-sys-color-on-primary: #121212;
-            --md-sys-color-primary-container: #616161;
-            --md-sys-color-on-primary-container: #d3d3d3;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
-            background-color: var(--md-sys-color-background);
-            color: var(--md-sys-color-on-background);
-            transition: background-color var(--transition-medium);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        /* --- 悼念横幅样式 (新增 Flex 布局和关闭按钮样式，优化为通知胶囊) --- */
-        #memorialBanner {
-            display: flex; /* 使用 Flex 布局 */
-            justify-content: center; /* 内容居中 */
-            align-items: center; /* 垂直居中 */
-            /* 采用 on-background / background 的高对比度，确保横幅清晰 */
-            /* 初始值将由 JS 覆盖为 memorial-data.js 中的 bannerStyle */
-            background-color: var(--md-sys-color-on-background); 
-            color: var(--md-sys-color-background);
-            text-align: center;
-            padding: 8px 16px; /* 胶囊式内边距 */
-            font-size: 14px;
-            font-weight: bold;
-            letter-spacing: 1px;
-            z-index: 1000;
-            margin-bottom: 16px;
-            position: sticky;
-            top: 0;
-            width: fit-content;
-            margin: 8px auto;
-            border-radius: 100px; /* 胶囊形状 */
-            transition: background-color var(--transition-medium), color var(--transition-medium);
-            cursor: pointer; /* 修复：增加指针样式 */
-        }
-        
-        #memorialBannerText {
-            flex-grow: 1; /* 让文本占据剩余空间 */
-            margin-right: 16px; /* 与关闭按钮保持距离 */
-        }
-
-        #closeMemorialButton {
-            background: none;
-            border: none;
-            color: inherit; /* 继承横幅的文本颜色 */
-            cursor: pointer;
-            padding: 4px;
-            border-radius: 50%;
-            transition: background-color var(--transition-fast);
-            line-height: 1;
-            flex-shrink: 0; /* 防止按钮被压缩 */
-        }
-
-        #closeMemorialButton:hover {
-            background-color: rgba(255, 255, 255, 0.1); /* 鼠标悬停效果 */
-        }
-        
-        #closeMemorialButton .material-icons {
-            font-size: 20px;
-            vertical-align: middle;
-        }
-
-        #memorialIcon {
-            font-size: 20px;
-            margin-right: 8px;
-        }
-
-        /* --- 布局与卡片（其余样式保持不变或跟随var()自动变色） --- */
-        .container { width: 100%; max-width: 640px; margin: 0 auto; padding: 16px; }
-        .app-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; background-color: rgba(var(--md-sys-color-surface), 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 10; }
-        h1 { font-size: 24px; font-weight: 700; color: var(--md-sys-color-primary); margin: 0; }
-        .main-content { display: flex; flex-direction: column; gap: 16px; }
-        .card { background-color: var(--md-sys-color-surface); border-radius: 24px; padding: 20px; border: 1px solid var(--md-sys-color-outline); transition: background-color var(--transition-medium), border-color var(--transition-medium); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadows */ }
-
-        .card-title { font-size: 14px; font-weight: 600; color: var(--md-sys-color-primary); margin: 0 0 16px 0; padding-left: 4px; display: flex; align-items: center; justify-content: space-between; }
-
-        /* --- 原生 UI 组件重绘 (性能优化版) --- */
-        .btn { display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer; user-select: none; text-decoration: none; font-size: 14px; font-weight: 600; text-transform: none; border-radius: 100px; height: 48px; padding: 0 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast); background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); flex: 1; } /* 修复：添加 flex:1 确保按钮均匀分布 */
-        .btn:active { transform: scale(0.95); filter: brightness(0.95); } /* Micro scale on active */
-        .btn-raised { background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, hsl(from var(--md-sys-color-primary) h s calc(l - 10%)) 100%); color: var(--md-sys-color-on-primary); }
-        .btn-block { width: 100%; }
-        .btn-icon { width: 40px; height: 40px; min-width: 40px; padding: 0; border-radius: 50%; box-shadow: none; background: transparent; flex: none; } /* 修复：历史按钮使用 flex: none */
-        .btn-icon .material-icons { margin: 0; }
-        .btn:disabled { background-color: var(--md-sys-color-surface-variant) !important; color: var(--md-sys-color-on-surface-variant) !important; opacity: 0.7; cursor: not-allowed; box-shadow: none; transform: none; filter: none; }
-        
-        .textfield { position: relative; margin: 16px 0; }
-        .textfield-input { width: 100%; border: none; border-bottom: 1px solid var(--md-sys-color-on-surface-variant); padding: 8px 0; font-size: 16px; background-color: transparent; color: var(--md-sys-color-on-background); transition: border-bottom var(--transition-fast); }
-        .textfield-input:focus { outline: none; border-bottom: 2px solid var(--md-sys-color-primary); }
-        .textfield-label { position: absolute; left: 0; top: 8px; pointer-events: none; color: var(--md-sys-color-on-surface-variant); transition: all var(--transition-fast); }
-        .textfield-input:focus + .textfield-label, .textfield-input:not(:placeholder-shown) + .textfield-label { top: -16px; font-size: 12px; color: var(--md-sys-color-primary); }
-
-        .progress-container { width: 100%; height: 4px; background-color: var(--md-sys-color-surface-variant); border-radius: 4px; overflow: hidden; }
-        .progress-bar { width: 0%; height: 100%; background-color: var(--md-sys-color-primary); transition: width var(--transition-medium); }
-
-        .chip-group { display: flex; gap: 8px; margin-bottom: 16px; padding: 4px; background-color: var(--md-sys-color-surface-variant); border-radius: 12px; }
-        .chip { flex: 1; background-color: transparent; color: var(--md-sys-color-on-surface-variant); font-weight: 500; cursor: pointer; transition: all var(--transition-fast); height: 40px; line-height: 40px; padding: 0 8px; border-radius: 10px; text-align: center; user-select: none; }
-        .chip.active { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
-        .dialog-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; opacity: 0; visibility: hidden; transition: opacity var(--transition-medium); }
-        .dialog-overlay.visible { opacity: 1; visibility: visible; }
-        .dialog { position: fixed; top: 50%; left: 50%; background-color: rgba(var(--md-sys-color-surface), 0.8); backdrop-filter: blur(12px); color: var(--md-sys-color-on-surface); border-radius: 28px; width: calc(100% - 32px); max-width: 560px; z-index: 1001; transform: translate(-50%, -50%) scale(0.95); opacity: 0; visibility: hidden; transition: all var(--transition-medium); }
-        .dialog-overlay.visible .dialog { transform: translate(-50%, -50%) scale(1); opacity: 1; visibility: visible; }
-        .dialog-title { font-size: 22px; font-weight: 600; padding: 24px 24px 16px; }
-        .dialog-content { padding: 0 24px 24px; color: var(--md-sys-color-on-surface-variant); line-height: 1.6; }
-        /* 核心修复样式：让对话框内容可滚动 */
-        .dialog-scrollable .dialog-content {
-            max-height: 70vh; /* 设置最大高度，根据需要调整 */
-            overflow-y: auto; /* 允许垂直滚动 */
-            padding-right: 16px; /* 为滚动条留出空间 */
-        }
-        .dialog-actions { padding: 8px 16px 16px; display: flex; justify-content: flex-end; gap: 8px; }
-        .dialog-actions .btn { background: none; box-shadow: none; color: var(--md-sys-color-primary); height: 40px; flex: none; } /* 修复：对话框按钮 flex: none */
-        .dialog ul { padding-left: 20px; margin-top: 8px; list-style-type: '👉 '; }
-        .dialog ul li { padding-left: 8px; margin-bottom: 6px; }
-
-        .dialog-bottom-sheet { top: auto; bottom: 0; left: 50%; transform: translate(-50%, 100%); border-radius: 28px 28px 0 0; }
-        .dialog-overlay.visible .dialog-bottom-sheet { transform: translate(-50%, 0); }
-        .dialog-bottom-sheet .dialog-title { padding-bottom: 8px; }
-        .dialog-bottom-sheet .dialog-content { padding: 0 0 16px; }
-        .list { list-style: none; padding: 0; margin: 0; }
-        .list-item { display: flex; align-items: center; padding: 12px 24px; cursor: pointer; transition: background-color var(--transition-fast); }
-        .list-item:active { background-color: rgba(0,0,0,0.05); }
-        body.dark-mode .list-item:active { background-color: rgba(255,255,255,0.05); }
-        .list-item-content { flex-grow: 1; pointer-events: none; } 
-        .list-item-icon { margin-left: 16px; color: var(--md-sys-color-primary); pointer-events: none; }
-
-        .snackbar { position: fixed; top: 16px; left: 50%; transform: translateX(-50%) translateY(-100px); background-color: #323232; color: #fff; padding: 14px 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 2000; font-size: 14px; transition: transform var(--transition-medium); }
-        body.dark-mode .snackbar { background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); }
-        .snackbar.visible { transform: translateX(-50%) translateY(0); }
-
-        /* --- 历史记录卡片样式 (核心修复区) --- */
-        #historyList { 
-            list-style: none; 
-            padding: 0; 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            transition: max-height 0.3s ease-out, padding-right 0.3s ease-out; /* 修复: 确保过渡应用于最大高度 */
-        }
-        
-        /* 修复: 确保 visible 状态有明确的最大高度和 overflow-y: auto */
-        #historyList.visible { 
-            max-height: 40vh; /* 使用视窗高度百分比，更具适应性 */
-            overflow-y: auto; 
-            padding-right: 8px; /* 为滚动条留出空间，防止内容被遮挡 */
-        }
-        
-        /* 修复: 确保 hidden 状态的 overflow-y 为 hidden */
-        #historyList.hidden { 
-            max-height: 0; 
-            overflow-y: hidden; 
-            padding-right: 0; /* 折叠时不需要滚动条空间 */
-        }
-        
-        #clearHistoryContainer {
-             /* 核心修复 2: 增加与上方列表的间距 */
-            margin-top: 16px;
-        }
-
-        /* Grid View for History */
-        #historyList.grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 8px;
-        }
-        #historyList.grid .history-item {
+            padding: 0;
+            font-family: 'Product Sans', 'Roboto', 'Noto Sans SC', sans-serif;
+            background-color: var(--m3-surface);
+            color: var(--text-dark);
+            display: flex;
             flex-direction: column;
-            align-items: center;
+            min-height: 100vh;
         }
-        #historyList.grid .history-item-thumb {
-            width: 100%;
-            height: auto;
-        }
-        #historyList.grid .history-item-info {
+
+        /* 顶部欢迎区 */
+        .hero {
+            padding: 80px 24px 48px;
             text-align: center;
-            margin-top: 4px;
-        }
-        #historyList.grid .history-item-actions {
-            margin-top: 4px;
+            background: linear-gradient(180deg, #e7f0fe 0%, var(--m3-surface) 100%);
         }
 
-        /* --- 其他组件样式 (来自原版 + 优化) --- */
-        .upload-area { background-color: var(--md-sys-color-primary-container); border: 2px dashed var(--md-sys-color-primary); border-radius: 20px; padding: 32px 16px; text-align: center; cursor: pointer; transition: background-color var(--transition-fast), transform var(--transition-fast); }
-        .upload-area:hover { transform: scale(1.02); }
-        .upload-area:active { transform: scale(1.01); }
-        .upload-area.dragover { background-color: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary); animation: breathe 1.5s ease-in-out infinite; }
-        .upload-area .material-icons-outlined { font-size: 48px; color: var(--md-sys-color-primary); }
-        .upload-area.dragover .material-icons-outlined, .upload-area.dragover .upload-tip { color: var(--md-sys-color-on-primary); }
-        .upload-tip { color: var(--md-sys-color-on-primary-container); margin: 8px 0 16px; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; } /* 优化: 避免长文件名换行 */
-        #imageUpload { display: none; }
-        .file-info { font-size: 14px; color: var(--md-sys-color-on-surface-variant); text-align: center; margin-top: 16px; word-break: break-all; }
-        #imagePreview { width: 100%; height: auto; max-height: 200px; margin-top: 16px; border-radius: 16px; object-fit: contain; display: none; cursor: pointer; }
-        #uploadProgressContainer { margin-top: 16px; display: none; }
-        #resultUrl { background-color: var(--md-sys-color-surface-variant); border-radius: 12px; padding: 12px 16px; font-family: 'SF Mono', 'Consolas', monospace; word-break: break-all; color: var(--md-sys-color-on-surface-variant); border: none; margin-bottom: 16px; }
-        .history-item { display: flex; align-items: center; padding: 12px; background-color: var(--md-sys-color-surface-variant); border-radius: 16px; transition: background-color var(--transition-fast), transform 0.3s ease; position: relative; overflow: hidden; }
-        .history-item-thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; margin-right: 16px; flex-shrink: 0; background-color: var(--md-sys-color-outline); display: flex; align-items: center; justify-content: center; cursor: pointer;}
-        .history-item-info { flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; cursor: pointer; }
-        .history-item-info:active, .history-item-thumb:active { filter: brightness(0.9); }
-        .history-item-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: center; } /* 修复：添加 align-items: center 确保垂直对齐 */
-        .delete-button { flex-shrink: 0; }
-        .swipe-delete { position: absolute; right: 0; height: 100%; background: var(--md-sys-color-error); color: white; border: none; padding: 0 16px; display: flex; align-items: center; transform: translateX(100%); transition: transform 0.3s; }
-        .history-item.swiped .swipe-delete { transform: translateX(0); }
-        #historyEmptyTip { text-align:center; color: var(--md-sys-color-on-surface-variant); padding: 20px 0; }
-        #censorStatus { margin-top: 16px; padding: 12px; border-radius: 12px; font-weight: bold; text-align: center; display: none; }
-        .censor-safe { background-color: var(--md-sys-color-success); color: var(--md-sys-color-on-primary); }
-        .censor-warning { background-color: var(--md-sys-color-error); color: var(--md-sys-color-on-primary); }
-        .censor-normal { background-color: var(--md-sys-color-surface-variant); color: var(--md-sys-color-on-surface-variant); }
-        #yiyanContent { font-size: 16px; text-align: center; color: var(--md-sys-color-on-surface); margin: 0 0 8px; line-height: 1.6; }
-        #yiyanFrom { font-size: 13px; text-align: center; color: var(--md-sys-color-on-surface-variant); margin: 0 0 16px; }
-        .footer { text-align: center; font-size: 12px; color: var(--md-sys-color-on-surface-variant); padding: 24px 0; }
-        .footer a { color: var(--md-sys-color-on-surface-variant); text-decoration: underline; }
-
-        /* 修复：结果区按钮容器，确保均匀分布 */
-        #resultArea .btn { flex: 1; min-width: 0; } /* 确保按钮在flex容器中均匀 */
-        .history-item-actions .btn-icon { flex: none; width: 36px; height: 36px; } /* 修复历史按钮大小一致 */
-
-        /* Breathe Animation for Upload Area */
-        @keyframes breathe {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+        .hero h1 {
+            font-size: 40px;
+            font-weight: 400;
+            margin: 0;
+            color: var(--m3-primary);
+            letter-spacing: -0.5px;
         }
 
-        /* Lightbox Overlay */
-        .lightbox-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .hero p {
+            font-size: 16px;
+            color: var(--text-light);
+            margin-top: 12px;
+        }
+
+        /* 导航卡片布局 */
+        .hub-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
             width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
+        }
+
+        /* M3 风格卡片 */
+        .hub-card {
+            background: var(--m3-card);
+            border: 1px solid var(--m3-outline);
+            border-radius: 28px; /* 典型的 M3 大圆角 */
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hub-card:hover {
+            background-color: #f1f3f4;
+            border-color: var(--m3-primary);
+            transform: scale(1.02);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            background: #e3e3e3;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
+            margin-bottom: 20px;
+            color: var(--m3-primary);
         }
 
-        /* FAB Style */
-        #fab {
-            position: fixed;
-            bottom: 16px;
-            right: 16px;
-            border-radius: 50%;
-            width: 56px;
-            height: 56px;
-            display: none; /* Show on mobile via media query */
+        .card-title {
+            font-size: 22px;
+            font-weight: 500;
+            margin: 0 0 10px 0;
         }
 
-        /* 优化：媒体查询以适应平板和电脑端 */
-        @media (min-width: 768px) { /* 平板 */
-            .container { max-width: 800px; padding: 24px; }
-            .main-content { gap: 24px; }
-            .card { padding: 24px; border-radius: 28px; }
-            .app-bar { padding: 16px 8px; }
-            h1 { font-size: 28px; }
-            .upload-area { padding: 40px 24px; }
-            .upload-area .material-icons-outlined { font-size: 56px; }
-            #imagePreview { max-height: 300px; }
-            #historyList.visible { max-height: 50vh; }
-            .dialog { max-width: 640px; }
-            .dialog-title { font-size: 24px; padding: 28px 28px 20px; }
-            .dialog-content { padding: 0 28px 28px; }
-            .snackbar { padding: 16px 28px; font-size: 15px; }
-            .footer { font-size: 13px; padding: 32px 0; }
+        .card-desc {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            flex-grow: 1;
         }
 
-        @media (min-width: 1024px) { /* 电脑 */
-            .container { max-width: 960px; padding: 32px; }
-            .main-content { gap: 32px; }
-            .card { padding: 32px; border-radius: 32px; }
-            .app-bar { padding: 20px 12px; }
-            h1 { font-size: 32px; }
-            .upload-area { padding: 48px 32px; }
-            .upload-area .material-icons-outlined { font-size: 64px; }
-            #imagePreview { max-height: 400px; }
-            #historyList.visible { max-height: 60vh; }
-            .dialog { max-width: 720px; }
-            .dialog-title { font-size: 26px; padding: 32px 32px 24px; }
-            .dialog-content { padding: 0 32px 32px; }
-            .snackbar { padding: 18px 32px; font-size: 16px; }
-            .footer { font-size: 14px; padding: 40px 0; }
+        /* 引导按钮样式 */
+        .card-btn {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--m3-primary);
+            gap: 4px;
         }
 
+        /* 页脚 */
+        footer {
+            margin-top: auto;
+            padding: 32px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 12px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* 针对移动端的微调 */
         @media (max-width: 600px) {
-            #fab { display: inline-flex; }
+            .hero { padding: 60px 20px 32px; }
+            .hero h1 { font-size: 32px; }
+            .hub-container { grid-template-columns: 1fr; }
         }
     </style>
-
 </head>
 <body>
 
-    <div id="memorialBanner" style="display: none;">
-        <i id="memorialIcon" class="material-icons">local_florist</i>
-        <span id="memorialBannerText"></span>
-        <button id="closeMemorialButton" title="关闭悼念模式">
-            <i class="material-icons">close</i>
-        </button>
-    </div> 
-
-<div class="container">
-    <header class="app-bar">
-        <h1>云落图床</h1>
-        <button class="btn btn-icon" id="themeToggleButton">
-            <i class="material-icons">brightness_2</i>
-        </button>
+    <header class="hero">
+        <h1>云落</h1>
+        <p>简洁、高效的极简工具集</p>
     </header>
 
-    <main class="main-content">
-        <section class="card">
-            <p class="card-title">接口设置</p>
-            <button id="apiSelectorButton" class="api-selector-button">
-                <span id="selectedApiName">重要</span>
-                <i class="material-icons">arrow_drop_down</i>
-            </button>
-            <input type="hidden" id="apiSelector" value="yanxuan">
-        </section>
+    <main class="hub-container">
         
-        <section class="card">
-            <p class="card-title">文件上传</p>
-            <div id="uploadArea" class="upload-area">
-                <i class="material-icons-outlined">upload_file</i>
-                <p id="uploadTip" class="upload-tip">拖拽文件到这里或</p>
-                <label for="imageUpload" class="btn btn-raised"><i class="material-icons">add_photo_alternate</i>点击选择文件</label>
-            </div>
-            <input type="file" id="imageUpload">
-            <p id="fileSizeTip" class="file-info"></p>
-            <img id="imagePreview" src="" alt="图片预览">
-            <div id="uploadProgressContainer">
-                <div class="progress-container"><div class="progress-bar" id="uploadProgressBar"></div></div>
-            </div>
-            <div id="censorStatus"><i class="material-icons" style="vertical-align: middle;">security</i> <span>图片安全检查状态</span></div>
-            <p id="statusMessage"></p>
-            <div id="uploadButtonContainer" style="margin-top: 16px;">
-                <button id="uploadButton" class="btn btn-block btn-raised" disabled><i class="material-icons">backup</i>开始上传</button>
-            </div>
-        </section>
-        
-        <section class="card" id="resultArea" style="display: none;">
-            <p class="card-title">上传成功</p>
-            <div class="chip-group" id="urlFormatSelector">
-                <span class="chip active" data-format="url">URL</span>
-                <span class="chip" data-format="markdown">Markdown</span>
-                <span class="chip" data-format="html">HTML</span>
-            </div>
-            <div id="resultUrl"></div>
-            <div style="display: flex; gap: 8px; margin-top: 8px;">
-                <button id="openUrlButton" class="btn"><i class="material-icons">open_in_new</i>打开</button>
-                <button id="copyUrlButton" class="btn btn-raised"><i class="material-icons">content_copy</i>复制</button>
-                <button id="enhanceImageButton" class="btn"><i class="material-icons">auto_fix_high</i>AI 增强</button>
-                <button id="addWatermarkButton" class="btn" disabled><i class="material-icons">branding_watermark</i>添加水印</button>
-            </div>
-        </section>
+        <a href="https://jiayuxuan123.rth1.xyz/NebulaSearch.html" class="hub-card">
+            <div class="card-icon"><i class="material-icons">cloud_circle</i></div>
+            <h2 class="card-title">Nebula Search</h2>
+            <p class="card-desc">聚合全网120+群组与12种云盘资源，一键触达影视、软件、短剧等海量内容。</p>
+            <div class="card-btn">立即进入 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+        </a>
 
-        <section class="card">
-            <p class="card-title">
-                <span>上传历史</span>
-                <button id="historyViewToggle" class="btn btn-icon" title="切换视图"><i class="material-icons">grid_view</i></button>
-                <button id="toggleHistoryButton" class="btn btn-icon" title="折叠/展开历史记录"><i class="material-icons">keyboard_arrow_up</i></button>
-            </p>
-            <ul id="historyList" class="visible"></ul>
-            <div id="clearHistoryContainer">
-                <button id="clearHistoryButton" class="btn" style="display: none;"><i class="material-icons">delete_sweep</i>清空记录</button>
-            </div>
-        </section>
+        <a href="https://jiayuxuan123.rth1.xyz/云落解析.html" class="hub-card">
+            <div class="card-icon"><i class="material-icons">movie_filter</i></div>
+            <h2 class="card-title">云落解析</h2>
+            <p class="card-desc">专注于哔哩哔哩与抖音视频的无损解析，支持高清视频提取与快捷预览。</p>
+            <div class="card-btn">开始解析 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+        </a>
 
-        <section class="card">
-            <p id="yiyanContent"></p>
-            <p id="yiyanFrom"></p>
-            <div style="text-align: center;">
-                <button id="refreshYiyanButton" class="btn"><i class="material-icons">refresh</i>换一句</button>
-            </div>
-        </section>
+        <a href="https://jiayuxuan123.rth1.xyz/StaticFetch.html" class="hub-card">
+            <div class="card-icon"><i class="material-icons">html</i></div>
+            <h2 class="card-title">网页源码获取</h2>
+            <p class="card-desc">快速抓取并分析网页静态源代码，提供格式化预览，开发者调试利器。</p>
+            <div class="card-btn">立即提取 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+        </a>
+
+        <a href="https://jiayuxuan123.rth1.xyz/yunluo.html" class="hub-card">
+            <div class="card-icon"><i class="material-icons">photo_library</i></div>
+            <h2 class="card-title">云落图床</h2>
+            <p class="card-desc">稳定可靠的图片托管平台，提供多种引用链接格式，让你的分享更简单。</p>
+            <div class="card-btn">上传图片 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+        </a>
+
     </main>
-    
-    <footer class="footer">
-        <p>联系方式: <a href="mailto:jiayuxuan_2024@qq.com">jiayuxuan_2024@qq.com</a></p>
-        <p>本站仅供学习交流使用
-        。温馨提示，可以双击横幅显示更多纪念当日纪念人物</p>
-        <div id="visitorCount"></div>
+
+    <footer>
+      <p>jiayuxuan123.rth1.xyz</p>
     </footer>
 
-    <button id="fab" class="btn btn-raised"><i class="material-icons">add</i></button>
-</div>
-
-<script>
-    // --- 原生 UI 组件逻辑 (性能优化版) ---
-    function showSnackbar(message) {
-        const existing = document.querySelector('.snackbar');
-        if (existing) existing.remove();
-        const snackbar = document.createElement('div');
-        snackbar.className = 'snackbar';
-        snackbar.textContent = message;
-        document.body.appendChild(snackbar);
-        setTimeout(() => snackbar.classList.add('visible'), 10);
-        setTimeout(() => {
-            snackbar.classList.remove('visible');
-            snackbar.addEventListener('transitionend', () => snackbar.remove(), { once: true });
-        }, 3000);
-    }
-    
-    /**
-     * 显示对话框 (优化：返回一个关闭句柄)
-     * @param {object} options - 配置选项
-     * @param {string} options.title - 标题
-     * @param {string} options.content - 内容（可以是 HTML 字符串）
-     * @param {Array<object>} [options.buttons=[]] - 按钮配置
-     * @param {string} [options.type='modal'] - 对话框类型 ('modal' 或 'bottom-sheet')
-     * @param {boolean} [options.scrollable=false] - 内容是否可滚动 (新增)
-     * @returns {{dialog: Element, close: function}} - 返回对话框元素和关闭函数
-     */
-    function showDialog(options) {
-        const { title, content, buttons = [], type = 'modal', scrollable = false } = options;
-        const overlay = document.createElement('div');
-        overlay.className = 'dialog-overlay';
-        const dialog = document.createElement('div');
-        let dialogClass = 'dialog';
-        if (type === 'bottom-sheet') {
-            dialogClass += ' dialog-bottom-sheet';
-        }
-        // 修复：添加可滚动类
-        if (scrollable) {
-            dialogClass += ' dialog-scrollable';
-        }
-        dialog.className = dialogClass;
-        
-        let dialogHtml = `<div class="dialog-title">\( {title}</div><div class="dialog-content"> \){content}</div>`;
-        if (buttons.length > 0) {
-            dialogHtml += '<div class="dialog-actions">';
-            buttons.forEach(btn => { 
-                // 修正: 为打开按钮设置特定的样式和行为
-                let buttonClass = 'btn';
-                let buttonStyle = '';
-                if (btn.text === '打开' && btn.url) { // 检查是否有 URL 属性
-                    buttonClass += ' btn-raised'; // 让它更显眼
-                    buttonStyle = 'style="flex: 1;"';
-                    dialogHtml += `<a href="\( {btn.url}" target="_blank" class=" \){buttonClass}" \( {buttonStyle}><i class="material-icons">open_in_new</i> \){btn.text}</a>`;
-                } else {
-                    // 修复：为按钮添加 data-id 以便事件监听，并确保非 URL 按钮使用 <button> 标签
-                    // 修复：确保所有按钮都有 data-id，用于事件监听
-                    dialogHtml += `<button class="\( {buttonClass}" data-id=" \){btn.text}" \( {buttonStyle}><i class="material-icons"> \){btn.icon || ''}</i>${btn.text}</button>`;
-                }
-            });
-            dialogHtml += '</div>';
-        }
-        dialog.innerHTML = dialogHtml;
-        overlay.appendChild(dialog);
-        document.body.appendChild(overlay);
-
-        const closeDialog = () => {
-            overlay.classList.remove('visible');
-            // 使用 requestAnimationFrame 确保在移除前执行 CSS 动画
-            requestAnimationFrame(() => {
-                overlay.addEventListener('transitionend', () => overlay.remove(), { once: true });
-            });
-        };
-
-        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDialog(); });
-
-        dialog.querySelectorAll('.btn').forEach(btnElement => {
-            // 仅处理 <button> 标签，<a> 标签由浏览器默认处理
-            if (btnElement.tagName === 'BUTTON') {
-                const btnId = btnElement.dataset.id;
-                const btnConfig = buttons.find(b => b.text === btnId);
-                btnElement.addEventListener('click', () => {
-                    if (btnConfig && btnConfig.onClick) btnConfig.onClick();
-                    // 仅在 onClick 中没有阻止关闭时执行关闭
-                    if (!btnConfig || !btnConfig.preventClose) {
-                        closeDialog();
-                    }
-                });
-            }
-        });
-        
-        setTimeout(() => overlay.classList.add('visible'), 10);
-        
-        // 返回对话框元素和关闭函数，用于外部控制
-        return { dialog, close: closeDialog }; 
-    }
-    
-    // --- 应用逻辑 ---
-    const $ = (selector) => document.querySelector(selector);
-    const $$ = (selector) => document.querySelectorAll(selector);
-
-    const uploadArea = \( ('#uploadArea'), uploadTip = \)('#uploadTip'), imageUpload = $('#imageUpload');
-    const apiSelector = \( ('#apiSelector'), selectedApiName = \)('#selectedApiName'), apiSelectorButton = $('#apiSelectorButton');
-    const uploadButton = \( ('#uploadButton'), statusMessage = \)('#statusMessage'), imagePreview = $('#imagePreview');
-    const progressContainer = \( ('#uploadProgressContainer'), progressBar = \)('#uploadProgressBar');
-    const resultArea = \( ('#resultArea'), resultUrlDisplay = \)('#resultUrl'), openUrlButton = \( ('#openUrlButton'), copyUrlButton = \)('#copyUrlButton'), enhanceImageButton = \( ('#enhanceImageButton'), addWatermarkButton = \)('#addWatermarkButton'); 
-    const yiyanContent = \( ('#yiyanContent'), yiyanFrom = \)('#yiyanFrom'), refreshYiyanButton = $('#refreshYiyanButton');
-    const historyList = \( ('#historyList'), clearHistoryButton = \)('#clearHistoryButton'), toggleHistoryButton = $('#toggleHistoryButton');
-    const themeToggleButton = $('#themeToggleButton');
-    const fileSizeTip = $('#fileSizeTip');
-    const urlFormatSelector = $('#urlFormatSelector');
-    const censorStatusElement = \( ('#censorStatus'), visitorCountElement = \)('#visitorCount');
-    const memorialBanner = $('#memorialBanner'); // 新增：悼念横幅元素
-    const memorialBannerText = $('#memorialBannerText'); // 新增：悼念横幅文本元素
-    const closeMemorialButton = $('#closeMemorialButton'); // 新增：关闭按钮
-    const historyViewToggle = $('#historyViewToggle');
-    const fab = $('#fab');
-
-    const CURRENT_APP_VERSION = 'v7.9'; // 版本号升级
-    const VERSION_KEY = 'yunluo_app_version';
-    const localStorageKey = 'yunluo_image_upload_history_v3'; 
-    const API_PREFERENCE_KEY = 'yunluo_api_preference';
-    const MAX_HISTORY_ITEMS = 15;
-    const THEME_KEY = 'yunluo_theme_mode';
-    const URL_FORMAT_KEY = 'yunluo_url_format';
-    const HISTORY_COLLAPSED_KEY = 'yunluo_history_collapsed'; 
-    const CENSOR_API_URL = 'https://api.pearktrue.cn/api/pornimage/';
-    const VISITOR_COUNT_API = 'https://api.jkyai.top/API/tjfksl/tongji.php';
-    const CENSOR_CLASSIFICATIONS_TO_BLOCK = ['色情', '露点', 'hentai', '暴力', '暴恐'];
-    // 修复：MEMORIAL_CLOSED_KEY 现在存储的是当前纪念人物 ID 组合的哈希值
-    const MEMORIAL_CLOSED_KEY = 'yunluo_memorial_closed_hash'; 
-    
-    // 新增：水印相关常量
-    const WATERMARK_API = 'https://api.jkyai.top/API/tpsytj';
-    const DEFAULT_WATERMARK_TEXT = '云落图床 https://jiayuxuan123.rth2.xyz/';
-    const WATERMARK_DOA = 3; // 右下角
-    const WATERMARK_SIZE = 20; // 字体大小
-    const UPLOADS_TODAY_KEY_PREFIX = 'yunluo_uploads_today_';
-    const MAX_UPLOADS_PER_DAY = 15;
-    
-    // 新增 AI 增强 API 信息
-    const AI_ENHANCE_API = {
-        url: 'http://api-v2.yuafeng.cn/API/clear_image.php',
-        key: 'fd950751ea8a7465b66267db0e31874f96bf61ac0bd421b853d148088bd96838'
-    };
-
-    const API_OPTIONS = [ 
-        { value: 'yanxuan', name: '网易严选图床', tip: '支持图片，单文件限制 5MB。', isRecommended: true, endpoint: 'https://api.xinyew.cn/api/yanxuantc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
-        { value: 'main', name: '主接口 (360图床)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/360tc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
-        { value: 'backup', name: '备用接口 (京东图床)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/jdtc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' }, 
-        { value: 'sogou', name: '搜狗图床 (需meta头)', tip: '支持图片，单文件限制 5MB。', isRecommended: false, endpoint: 'https://api.xinyew.cn/api/sogotc', fileSize: 5*1024*1024, fileName: 'file', accept: 'image/*' } 
-    ];
-    let selectedFile = null, sogouMetaTag = null, uploadedUrl = '', currentUrlFormat = localStorage.getItem(URL_FORMAT_KEY) || 'url';
-    const API_CONFIG = API_OPTIONS.reduce((acc, curr) => { acc[curr.value] = curr; return acc; }, {});
-
-    let todayMemorialFigures = []; // 新增：保存今日所有纪念人物的列表
-    let todayUploadCount = 0; // 新增：今日上传计数
-
-    const truncateFilename = (name, maxLength) => name.length > maxLength ? `\( {name.slice(0, maxLength / 2)}... \){name.slice(-maxLength / 2)}` : name;
-    async function copyToClipboard(text, successMessage) { try { await navigator.clipboard.writeText(text); showSnackbar(successMessage); } catch (err) { showSnackbar('复制失败，请手动操作'); } }
-    
-    function getTodayKey() {
-        return UPLOADS_TODAY_KEY_PREFIX + new Date().toDateString();
-    }
-    
-    function getTodayUploadCount() {
-        const key = getTodayKey();
-        return parseInt(localStorage.getItem(key) || '0', 10);
-    }
-    
-    function incrementTodayUploadCount() {
-        const key = getTodayKey();
-        todayUploadCount = getTodayUploadCount() + 1;
-        localStorage.setItem(key, todayUploadCount.toString());
-        updateWatermarkUI(); // 更新UI状态
-        return todayUploadCount;
-    }
-    
-    function updateWatermarkUI() {
-        const isOverLimit = todayUploadCount >= MAX_UPLOADS_PER_DAY;
-        addWatermarkButton.disabled = isOverLimit;
-        addWatermarkButton.title = isOverLimit ? '今日上传已达上限，水印自动添加' : '自定义添加水印';
-        if (isOverLimit) {
-            addWatermarkButton.innerHTML = '<i class="material-icons">lock</i>水印自动';
-        } else {
-            addWatermarkButton.innerHTML = '<i class="material-icons">branding_watermark</i>添加水印';
-        }
-    }
-    
-    async function addWatermark(originalUrl, originalFileName, customText = null, isAuto = false) {
-        const text = customText || DEFAULT_WATERMARK_TEXT;
-        const loadingDialog = showDialog({
-            title: isAuto ? '自动添加水印' : '添加水印中',
-            content: `<p style="text-align:center;"><i class="material-icons" style="vertical-align: middle;">autorenew</i> 正在处理水印，请稍候...</p>`,
-            buttons: []
-        });
-        
-        try {
-            // 1. 调用水印API获取水印后的图片blob
-            const watermarkUrl = `\( {WATERMARK_API}?url= \){encodeURIComponent(originalUrl)}&text=\( {encodeURIComponent(text)}&doa= \){WATERMARK_DOA}&size=${WATERMARK_SIZE}`;
-            const watermarkResponse = await fetch(watermarkUrl);
-            if (!watermarkResponse.ok) {
-                throw new Error(`水印API错误: ${watermarkResponse.status}`);
-            }
-            const watermarkBlob = await watermarkResponse.blob();
-            
-            // 2. 将水印blob作为新文件上传到当前图床API
-            const config = API_CONFIG[apiSelector.value];
-            const formData = new FormData();
-            const watermarkedFileName = originalFileName.replace(/\.[^/.]+$/, '') + (isAuto ? '_auto_watermarked.jpg' : '_watermarked.jpg');
-            formData.append(config.fileName, watermarkBlob, watermarkedFileName);
-            
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', config.endpoint, true);
-            
-            return new Promise((resolve, reject) => {
-                xhr.onload = () => {
-                    loadingDialog.close();
-                    if (xhr.status >= 200 && xhr.status < 300) {
-                        try {
-                            const data = JSON.parse(xhr.responseText);
-                            if ((data.code === 200 && data.url) || (data.errno === 0 && data.data?.url)) {
-                                const newUrl = data.url || data.data.url;
-                                const message = isAuto ? '水印已自动添加' : '水印添加成功';
-                                showSnackbar(message);
-                                resolve({ url: newUrl, name: watermarkedFileName });
-                            } else {
-                                reject(new Error(data.msg || data.error || data.message || '图床API返回格式错误'));
-                            }
-                        } catch (e) {
-                            reject(new Error('解析响应失败'));
-                        }
-                    } else {
-                        reject(new Error(`HTTP ${xhr.status} 错误`));
-                    }
-                };
-                
-                xhr.onerror = () => {
-                    loadingDialog.close();
-                    reject(new Error('网络连接错误'));
-                };
-                
-                xhr.send(formData);
-            });
-        } catch (error) {
-            loadingDialog.close();
-            const title = isAuto ? '自动水印失败' : '添加水印失败';
-            showDialog({
-                title: `${title} 😢`,
-                content: `<p>处理过程中发生错误：${error.message}。原图链接保持不变。</p>`,
-                buttons: [{ text: '好的' }]
-            });
-            return null;
-        }
-    }
-    
-    // 新增：自定义水印对话框
-    function showCustomWatermarkDialog(url, name) {
-        const inputText = prompt('请输入水印文本（默认：' + DEFAULT_WATERMARK_TEXT + '）：', DEFAULT_WATERMARK_TEXT);
-        if (inputText === null) {
-            return; // 用户取消
-        }
-        const text = inputText.trim() || DEFAULT_WATERMARK_TEXT; // 如果为空，使用默认
-        addWatermark(url, name, text).then(result => {
-            if (result) {
-                // 修复：删除原来的无水印历史记录（确保url是旧的原始url）
-                deleteHistoryItem(url); // url 是无水印的原始URL
-                // 更新当前上传结果为新的有水印项
-                uploadedUrl = result.url;
-                selectedFile.name = result.name;
-                resultUrlDisplay.textContent = getFormattedUrl(uploadedUrl, selectedFile.name, currentUrlFormat);
-                updateResultAreaButtons(uploadedUrl, selectedFile);
-                // 添加新的有水印项到历史
-                addHistoryItem(result.name, result.url);
-                // 强制刷新历史列表以确保立即显示，并防止任何缓存问题
-                loadHistory();
-                // 新增：显示确认提示，证明删的是无水印的
-                showSnackbar('无水印记录已删除，有水印的新记录已添加');
-            }
-        });
-    }
-
-    function updateApiSelectionUI() { 
-        const config = API_CONFIG[apiSelector.value]; 
-        selectedApiName.textContent = config.name; 
-        fileSizeTip.textContent = config.tip; 
-        imageUpload.setAttribute('accept', config.accept); 
-        if (selectedFile) handleFileSelect(selectedFile); 
-        
-        // 修复：更新 Open URL 按钮的状态
-        updateResultAreaButtons(uploadedUrl, selectedFile);
-    }
-    function showApiSelectorDialog() { let listHtml = '<ul class="list">'; API_OPTIONS.forEach(opt => { const isChecked = opt.value === apiSelector.value; const badge = opt.isRecommended ? '<span class="recommended-badge">推荐</span>' : ''; listHtml += `<li class="list-item" data-value="\( {opt.value}"><div class="list-item-content"> \){opt.name} \( {badge}</div><div class="list-item-icon"><i class="material-icons">radio_button_ \){isChecked ? 'checked' : 'unchecked'}</i></div></li>`; }); listHtml += '</ul>'; const { dialog } = showDialog({ title: '选择接口', content: listHtml, type: 'bottom-sheet' }); dialog.querySelectorAll('.list-item').forEach(item => { item.addEventListener('click', function() { const newVal = this.dataset.value; dialog.querySelectorAll('.material-icons').forEach(i => i.textContent = 'radio_button_unchecked'); this.querySelector('.material-icons').textContent = 'radio_button_checked'; setTimeout(() => { if (newVal !== apiSelector.value) { apiSelector.value = newVal; localStorage.setItem(API_PREFERENCE_KEY, newVal); selectedFile = null; imageUpload.value = ''; imagePreview.style.display = 'none'; uploadButton.disabled = true; statusMessage.textContent = '请选择新文件'; censorStatusElement.style.display = 'none'; updateApiSelectionUI(); } dialog.closest('.dialog-overlay')?.click(); }, 200); }); }); }
-    const getFormattedUrl = (url, fileName, format) => { const name = fileName.replace(/\.[^/.]+\( /, ""); switch (format) { case 'markdown': return `![ \){name}](\( {url})`; case 'html': return `<img src=" \){url}" alt="\( {name}" title=" \){name}">`; default: return url; } };
-    function updateResultAreaButtons(url, file) {
-        const isImage = file && file.type.startsWith('image/');
-        // 修复：Open 按钮
-        if (url) {
-            openUrlButton.style.display = 'inline-flex';
-            openUrlButton.onclick = () => window.open(url, '_blank');
-        } else {
-            openUrlButton.style.display = 'none';
-            openUrlButton.onclick = null;
-        }
-        // AI 增强按钮
-        enhanceImageButton.style.display = isImage ? 'inline-flex' : 'none';
-        // 水印按钮
-        if (isImage) {
-            addWatermarkButton.style.display = 'inline-flex';
-            const isOverLimit = getTodayUploadCount() >= MAX_UPLOADS_PER_DAY;
-            addWatermarkButton.disabled = isOverLimit || url.includes('_watermarked');
-            addWatermarkButton.title = isOverLimit ? '今日上传已达上限，水印自动添加' : (url.includes('_watermarked') ? '水印已添加' : '自定义添加水印');
-            if (isOverLimit || url.includes('_watermarked')) {
-                addWatermarkButton.innerHTML = '<i class="material-icons">check</i>水印已添加';
-            } else {
-                addWatermarkButton.innerHTML = '<i class="material-icons">branding_watermark</i>添加水印';
-            }
-        } else {
-            addWatermarkButton.style.display = 'none';
-        }
-    }
-    function handleFormatChange(newFormat) { 
-        currentUrlFormat = newFormat; 
-        localStorage.setItem(URL_FORMAT_KEY, newFormat); 
-        urlFormatSelector.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); 
-        urlFormatSelector.querySelector(`[data-format="${newFormat}"]`).classList.add('active'); 
-        if (uploadedUrl && selectedFile) { 
-            resultUrlDisplay.textContent = getFormattedUrl(uploadedUrl, selectedFile.name, newFormat); 
-            // 修复：如果切换格式，Open 按钮不受影响，但确保其状态正确
-            updateResultAreaButtons(uploadedUrl, selectedFile);
-        } 
-    }
-    function handleFileSelect(file) { 
-        if (!file) { 
-            selectedFile = null; 
-            uploadButton.disabled = true; 
-            imagePreview.style.display = 'none'; 
-            uploadTip.textContent = '拖拽文件到这里或'; 
-            return; 
-        } 
-        const config = API_CONFIG[apiSelector.value]; 
-        const reset = () => { 
-            statusMessage.textContent = ''; 
-            selectedFile = null; 
-            uploadButton.disabled = true; 
-            imagePreview.style.display = 'none'; 
-            fileSizeTip.textContent = config.tip; 
-            censorStatusElement.style.display = 'none'; 
-            updateResultAreaButtons('', null); // 修复
-        }; 
-        if (config.accept !== '*' && !file.type.startsWith('image/')) { 
-            reset(); 
-            statusMessage.textContent = '请选择图片文件！'; 
-            statusMessage.className = 'status-error'; 
-            uploadTip.textContent = '拖拽文件到这里或'; 
-            return; 
-        } 
-        if (file.size > config.fileSize) { 
-            reset(); 
-            statusMessage.textContent = `文件超过 ${(config.fileSize / (1024*1024)).toFixed(2)}MB！`; 
-            statusMessage.className = 'status-error'; 
-            uploadTip.textContent = '拖拽文件到这里或'; 
-            return; 
-        } 
-        selectedFile = file; 
-        statusMessage.textContent = ''; 
-        fileSizeTip.textContent = `已选择: \( {selectedFile.name} ( \){(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)`; 
-        uploadButton.disabled = false; 
-        if (file.type.startsWith('image/')) { 
-            const reader = new FileReader(); 
-            reader.onload = e => { 
-                imagePreview.src = e.target.result; 
-                imagePreview.style.display = 'block'; 
-            }; 
-            reader.readAsDataURL(selectedFile); 
-            setCensorStatus('normal', '图片已选中。上传后将进行最终安全检查。', true); 
-        } else { 
-            imagePreview.style.display = 'none'; 
-            setCensorStatus('normal', '非图片文件，安全检查将跳过。', true); 
-        } 
-        resultArea.style.display = 'none'; 
-        uploadTip.textContent = `文件已就绪: ${truncateFilename(selectedFile.name, 28)}`; 
-        updateResultAreaButtons('', selectedFile); // 修复
-    }
-    
-    // 核心：AI 增强功能
-    async function enhanceImage(url, originalName) {
-        // 1. 显示加载对话框并获取关闭句柄
-        const loadingDialog = showDialog({
-            title: 'AI 图片增强',
-            content: `<p style="text-align:center;"><i class="material-icons" style="vertical-align: middle;">autorenew</i> 正在请求 AI 服务器，请稍候...</p>`,
-            buttons: []
-        });
-        
-        const enhanceUrl = `\( {AI_ENHANCE_API.url}?url= \){encodeURIComponent(url)}&apikey=${AI_ENHANCE_API.key}`;
-        
-        try {
-            const response = await fetch(enhanceUrl);
-            if (!response.ok) throw new Error(`HTTP 错误: ${response.status}`);
-            const data = await response.json();
-
-            // 2. 成功后，先关闭加载对话框
-            loadingDialog.close();
-
-            if (data.code === 0 && data.data && data.data.image) {
-                const enhancedUrl = data.data.image;
-                const enhancedName = `AI增强-${originalName}`;
-                
-                addHistoryItem(enhancedName, enhancedUrl);
-                
-                // 3. 显示成功对话框
-                showDialog({
-                    title: 'AI 增强成功 🎉',
-                    content: `<p>图片已成功增强，并已加入历史记录。</p><img src="${enhancedUrl}" alt="增强后的图片" style="max-width: 100%; border-radius: 12px; margin-top: 15px;">`,
-                    buttons: [
-                        { text: '关闭' },
-                        // 修复：新增 Open 按钮到对话框，确保有 URL 属性
-                        { text: '打开', url: enhancedUrl },
-                        { text: '复制链接', onClick: () => copyToClipboard(enhancedUrl, '增强图片链接已复制') }
-                    ],
-                    scrollable: true
-                });
-            } else {
-                throw new Error(data.msg || 'API返回格式错误');
-            }
-        } catch (error) {
-            console.error('AI Enhance Error:', error);
-            
-            // 4. 失败时，关闭加载对话框
-            loadingDialog.close();
-
-            // 5. 显示失败对话框
-            showDialog({
-                title: 'AI 增强失败 😢',
-                content: `<p>处理过程中发生错误：${error.message}。请检查原图链接是否有效，或稍后再试。</p>`,
-                buttons: [{ text: '好的' }]
-            });
-        }
-    }
-    // 核心：AI 增强功能 END
-
-    // 新增：手动添加水印事件
-    function handleAddWatermark() {
-        if (getTodayUploadCount() >= MAX_UPLOADS_PER_DAY) {
-            showSnackbar('今日上传已达上限，水印已自动添加');
-            return;
-        }
-        if (!uploadedUrl || !selectedFile || !selectedFile.type.startsWith('image/')) {
-            showSnackbar('仅支持图片文件添加水印');
-            return;
-        }
-        if (uploadedUrl.includes('_watermarked')) {
-            showSnackbar('水印已添加');
-            return;
-        }
-        showCustomWatermarkDialog(uploadedUrl, selectedFile.name);
-    }
-
-    function renderHistory(history) { 
-        historyList.innerHTML = ''; 
-        const hasHistory = history.length > 0; 
-        clearHistoryButton.style.display = hasHistory ? 'inline-flex' : 'none'; 
-        toggleHistoryButton.style.display = hasHistory ? 'block' : 'none'; 
-        historyViewToggle.style.display = hasHistory ? 'block' : 'none';
-        $('#clearHistoryContainer').style.display = hasHistory ? 'block' : 'none'; 
-        if (!hasHistory) { 
-            historyList.innerHTML = `
-                <li id="historyEmptyTip" style="text-align: center;">
-                    <svg width="100" height="100" viewBox="0 0 100 100">
-                        <circle cx="50" cy="50" r="40" fill="var(--md-sys-color-primary-container)" />
-                        <text x="50" y="55" text-anchor="middle" font-size="20">☁️</text>
-                    </svg>
-                    <p>这里空空如也，快去上传第一张图片吧~</p>
-                </li>
-            `; 
-            return; 
-        } 
-        history.forEach(item => { 
-            const li = document.createElement('li'); 
-            li.className = 'history-item'; 
-            li.dataset.url = item.url;
-            li.dataset.name = item.name;
-            const isImage = item.name.match(/\.(jpe?g|png|gif|bmp|webp|ico|svg|jpeg)$/i);
-            
-            // 修正：AI 增强按钮现在对所有图片文件显示
-            const canEnhance = isImage;
-            const canWatermark = isImage && !item.name.includes('_watermarked') && getTodayUploadCount() < MAX_UPLOADS_PER_DAY;
-            
-            li.innerHTML = `
-                \( {isImage ? `<img src=" \){item.url}" alt="thumbnail" class="history-item-thumb" loading="lazy">` : `<div class="history-item-thumb"><i class="material-icons">insert_drive_file</i></div>`}
-                <div class="history-item-info" data-url="\( {item.url}" data-name=" \){item.name}"><span>${truncateFilename(item.name, 35)}</span></div>
-                <div class="history-item-actions">
-                    <button class="open-button btn btn-icon" data-url="\( {item.url}" title="打开链接" style="display: \){isImage ? 'block' : 'none'};"><i class="material-icons">open_in_new</i></button>
-                    \( {canEnhance ? `<button class="enhance-button btn btn-icon" data-url=" \){item.url}" data-name="${item.name}" title="AI 图片增强"><i class="material-icons">auto_fix_high</i></button>` : ''}
-                    \( {canWatermark ? `<button class="watermark-button btn btn-icon" data-url=" \){item.url}" data-name="${item.name}" title="自定义水印"><i class="material-icons">branding_watermark</i></button>` : ''}
-                    <button class="delete-button btn btn-icon" data-url="\( {item.url}" data-name=" \){item.name}"><i class="material-icons">delete</i></button>
-                </div>
-                <button class="swipe-delete">删除</button>
-            `; 
-            historyList.appendChild(li); 
-        }); 
-    }
-    function loadHistory() { const history = JSON.parse(localStorage.getItem(localStorageKey)) || []; renderHistory(history); applyHistoryCollapseState(history.length > 0); }
-    function addHistoryItem(name, url) { let history = JSON.parse(localStorage.getItem(localStorageKey)) || []; history = history.filter(item => item.url !== url); history.unshift({ name, url, timestamp: Date.now() }); if (history.length > MAX_HISTORY_ITEMS) history.pop(); localStorage.setItem(localStorageKey, JSON.stringify(history)); renderHistory(history); }
-    function deleteHistoryItem(url) { let history = JSON.parse(localStorage.getItem(localStorageKey)) || []; history = history.filter(item => item.url !== url); localStorage.setItem(localStorageKey, JSON.stringify(history)); renderHistory(history); showSnackbar('该条历史记录已删除'); if (history.length === 0) setHistoryCollapseState(true); }
-    function clearAllHistory() { showDialog({ title: '确认清空', content: '确定要清空所有上传历史记录吗？', buttons: [{ text: '取消' }, { text: '确定', onClick: () => { localStorage.removeItem(localStorageKey); renderHistory([]); showSnackbar('所有历史记录已清空'); setHistoryCollapseState(true); }}] }); }
-    
-    // --- 修复后的历史记录折叠/展开逻辑 ---
-    function setHistoryCollapseState(isCollapsed) {
-        localStorage.setItem(HISTORY_COLLAPSED_KEY, isCollapsed ? 'true' : 'false');
-        
-        // 确保 DOM 元素存在，并且有历史记录时才显示清空按钮
-        const hasHistory = (JSON.parse(localStorage.getItem(localStorageKey)) || []).length > 0;
-        
-        if (isCollapsed) {
-            historyList.classList.remove('visible');
-            historyList.classList.add('hidden');
-            toggleHistoryButton.querySelector('.material-icons').textContent = 'keyboard_arrow_down';
-            $('#clearHistoryContainer').style.display = 'none'; // 折叠时隐藏清空按钮
-        } else {
-            historyList.classList.remove('hidden');
-            historyList.classList.add('visible'); // 修复：确保展开时有 visible 类
-            toggleHistoryButton.querySelector('.material-icons').textContent = 'keyboard_arrow_up';
-            if (hasHistory) {
-                $('#clearHistoryContainer').style.display = 'block'; // 展开且有历史时显示清空按钮
-            }
-        }
-    }
-    
-    function applyHistoryCollapseState(hasHistory) {
-        const saved = localStorage.getItem(HISTORY_COLLAPSED_KEY);
-        // 如果没有历史记录，强制折叠（隐藏）
-        const shouldCollapse = !hasHistory || (saved === 'true');
-        setHistoryCollapseState(shouldCollapse);
-    }
-    // --- 修复后的历史记录折叠/展开逻辑 END ---
-
-    function setCensorStatus(level, message, show = true) { censorStatusElement.style.display = show ? 'block' : 'none'; censorStatusElement.className = `censor-${level}`; censorStatusElement.querySelector('span').textContent = message; censorStatusElement.querySelector('.material-icons').textContent = level === 'safe' ? 'check_circle' : level === 'warning' ? 'error' : 'security'; }
-    async function checkCensor(url) { if (!selectedFile.type.startsWith('image/')) { setCensorStatus('normal', '非图片文件，安全检查跳过。', true); return true; } setCensorStatus('normal', '正在进行安全检查...', true); try { const response = await fetch(CENSOR_API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ file: url }) }); if (!response.ok) { setCensorStatus('normal', `安全检查服务错误(\( {response.status})，链接已放行。`, true); return true; } const result = await response.json(); if (result.code !== 200 || !result.data) { setCensorStatus('normal', `安全检查失败( \){result.msg || '未知错误'})，链接已放行。`, true); return true; } const classification = result.classification || '未知'; if (CENSOR_CLASSIFICATIONS_TO_BLOCK.includes(classification)) { const message = `安全警告！图片被判定为：\( {classification}。链接已拦截。`; setCensorStatus('warning', message, true); return false; } else { const message = `安全检查通过。图片分类： \){classification}。`; setCensorStatus('safe', message, true); return true; } } catch (error) { console.error('Censor API error:', error); setCensorStatus('normal', '安全检查网络错误，链接已放行。', true); return true; } }
-    
-    async function uploadFile() { 
-        if (!selectedFile) return; 
-        
-        const config = API_CONFIG[apiSelector.value]; 
-        
-        if (config.accept === 'image/*' && !selectedFile.type.startsWith('image/')) { 
-            statusMessage.textContent = '当前接口仅支持上传图片文件！'; 
-            statusMessage.className = 'status-error'; 
-            return; 
-        } 
-        
-        statusMessage.textContent = '准备上传...'; 
-        statusMessage.className = ''; 
-        uploadButton.disabled = true; 
-        resultArea.style.display = 'none'; 
-        progressContainer.style.display = 'block'; 
-        progressBar.style.width = '0%'; 
-        setCensorStatus('normal', '文件上传中...', true); 
-        
-        // Integrate progress into button
-        const originalButtonHTML = uploadButton.innerHTML;
-        uploadButton.innerHTML = '<div class="progress-bar" id="buttonProgress" style="width: 0%; height: 100%; position: absolute; left: 0; top: 0; background-color: rgba(255,255,255,0.3);"></div><span style="z-index: 1;">上传中...</span>';
-        
-        const onSuccess = async (url, fileName) => { 
-            let finalUrl = url;
-            let finalFileName = fileName;
-            const isImage = selectedFile.type.startsWith('image/');
-            const currentCount = getTodayUploadCount();
-            
-            // 检查是否需要自动添加水印（超过15次且是图片）
-            if (isImage && currentCount >= MAX_UPLOADS_PER_DAY) {
-                const watermarkResult = await addWatermark(url, fileName, null, true);
-                if (watermarkResult) {
-                    finalUrl = watermarkResult.url;
-                    finalFileName = watermarkResult.name;
-                    // 新增：防护，如果原始url已在历史中（虽正常不会，但防万一），删除它
-                    
-                }
-            }
-            
-            // 递增计数（无论是否添加水印）
-            incrementTodayUploadCount();
-            
-            if (isImage) { 
-                const isSafe = await checkCensor(finalUrl); 
-                if (!isSafe) { 
-                    statusMessage.textContent = '上传成功，但图片安全检查未通过，链接已拦截。'; 
-                    statusMessage.className = 'status-error'; 
-                    uploadedUrl = ''; 
-                    resultArea.style.display = 'none'; 
-                    updateResultAreaButtons('', selectedFile); // 修复
-                    return; 
-                } 
-            } else { 
-                setCensorStatus('normal', '非图片文件，安全检查跳过。', true); 
-            } 
-            uploadedUrl = finalUrl; 
-            selectedFile.name = finalFileName; // 更新 selectedFile.name 以确保一致
-            statusMessage.textContent = '上传成功！'; 
-            statusMessage.className = 'status-success'; 
-            resultUrlDisplay.textContent = getFormattedUrl(finalUrl, finalFileName, currentUrlFormat); 
-            resultArea.style.display = 'block'; 
-            updateResultAreaButtons(finalUrl, selectedFile); 
-            addHistoryItem(finalFileName, finalUrl); 
-            // 强制刷新历史列表
-            loadHistory();
-            // Confetti celebration
-            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        }; 
-        
-        const onError = (msg) => { 
-            uploadedUrl = ''; 
-            statusMessage.textContent = `上传失败: ${msg}`; 
-            statusMessage.className = 'status-error'; 
-            setCensorStatus('warning', '上传失败，未进行安全检查。', true); 
-            updateResultAreaButtons('', selectedFile); // 修复
-        }; 
-        
-        try { 
-            const formData = new FormData(); 
-            formData.append(config.fileName, selectedFile, selectedFile.name); 
-            const xhr = new XMLHttpRequest(); 
-            xhr.open('POST', config.endpoint, true); 
-            
-            xhr.upload.onprogress = e => { 
-                if (e.lengthComputable) { 
-                    const percent = (e.loaded / e.total) * 100; 
-                    progressBar.style.width = percent + '%'; 
-                    $('#buttonProgress').style.width = percent + '%';
-                    statusMessage.textContent = `上传中... ${Math.round(percent)}%`; 
-                } 
-            }; 
-            
-            xhr.onloadend = () => { 
-                uploadButton.disabled = false; 
-                progressContainer.style.display = 'none'; 
-                uploadButton.innerHTML = originalButtonHTML;
-            }; 
-            
-            xhr.onerror = () => { 
-                onError('网络连接错误'); 
-                sogouMetaTag?.remove(); 
-                sogouMetaTag = null; 
-            }; 
-            
-            xhr.onload = () => { 
-                sogouMetaTag?.remove(); 
-                sogouMetaTag = null; 
-                if (xhr.status >= 200 && xhr.status < 300) { 
-                    try { 
-                        const data = JSON.parse(xhr.responseText); 
-                        if ((data.code === 200 && data.url) || (data.errno === 0 && data.data?.url)) { 
-                            const url = data.url || data.data.url; 
-                            onSuccess(url, selectedFile.name); 
-                            if (apiSelector.value === 'sogou' && data.meta) { 
-                                const temp = document.createElement('div'); 
-                                temp.innerHTML = data.meta; 
-                                sogouMetaTag = temp.firstChild; 
-                                document.head.appendChild(sogouMetaTag); 
-                            } 
-                        } else { 
-                            onError(data.msg || data.error || data.message || 'API返回格式错误'); 
-                        } 
-                    } catch (e) { 
-                        onError('解析响应失败'); 
-                    } 
-                } else { 
-                    onError(`HTTP ${xhr.status} 错误`); 
-                } 
-            }; 
-            xhr.send(formData); 
-        } catch (error) { 
-            onError(error.message); 
-            uploadButton.disabled = false; 
-            progressContainer.style.display = 'none'; 
-            uploadButton.innerHTML = originalButtonHTML;
-        } 
-    }
-    
-    async function fetchYiyan() { try { const response = await fetch('https://v1.hitokoto.cn/?encode=json&c=a&c=b&c=c&d&d=i'); if (!response.ok) throw new Error(); const data = await response.json(); yiyanContent.textContent = data.hitokoto; yiyanFrom.textContent = `—— \( {data.from} \){data.from_who ? '（' + data.from_who + '）' : ''}`; } catch (e) { yiyanContent.textContent = '愿你有一天能与你最重要的人重逢。'; yiyanFrom.textContent = '—— 未知'; } }
-    async function fetchVisitorCount() { try { await fetch(`${VISITOR_COUNT_API}?text=yunluo_image_bed`); visitorCountElement.textContent = '欢迎访问云落图床'; } catch (e) { console.error('Visitor count API error:', e); visitorCountElement.textContent = '访客统计服务连接失败'; } }
-    function applyTheme(mode) { 
-        const icon = themeToggleButton.querySelector('.material-icons'); 
-        const isGrayscaleMode = document.body.classList.contains('grayscale-mode');
-
-        if (mode === 'dark') { 
-            document.body.classList.add('dark-mode'); 
-            icon.textContent = 'light_mode'; 
-        } else { 
-            document.body.classList.remove('dark-mode'); 
-            icon.textContent = 'brightness_2'; 
-        } 
-        
-        // 只有非悼念模式下才保存和切换图标
-        if (!isGrayscaleMode) {
-            localStorage.setItem(THEME_KEY, mode);
-        }
-    }
-
-    /**
-     * 修复后的更新日志对话框，内容可滚动，并添加了水印功能公告
-     */
-    function showChangelogDialog() { 
-        const content = `<p>本次版本更新为您带来了更多的选择和便利：</p><ul>
-            <li>【🔥 新功能 v7.9】<b>自定义水印添加</b>：前15次上传支持自定义水印文本（弹出输入框）。超过15次后，按钮禁用，并自动添加固定水印“云落图床 https://jiayuxuan123.rth2.xyz/”以引流（次日重置）。</li>
-            <li>【修复 v7.9】按钮大小与摆放：优化结果区和历史记录按钮的flex布局，确保均匀分布和垂直对齐。</li>
-            <li>【修复 v7.7】切换接口后，接口名称显示未立即更新的问题。</li>
-            <li>【🔥 新功能 v7.6】<b>AI 图片增强</b>：AI 图片增强图片文件（需为图片格式）。您可以对上传后的图片进行一键 AI 增强，提升图片质量。增强后的图片将自动加入历史记录。</li>
-            <li>【🔥 改进 v7.6】<b>新增“打开”按钮</b>：在上传成功结果区和历史记录中，为图片文件新增“打开”按钮，可直接在新标签页中查看图片。</li>
-            <li>【重要修复 v7.6】历史记录折叠功能： 彻底修复了上传历史记录列表的折叠和展开动画不流畅以及滚动条显示异常的问题。</li>
-            <li>【v7.4优化】默认接口记忆：系统现在会自动记住您上次使用的上传接口，无需每次重新选择。</li>
-            <li>【v7.4优化】接口逻辑修复：修正了部分备用接口的链接解析逻辑，提高了上传成功率。</li>
-            </ul><p style="margin-top: 15px; font-size: 13px;">感谢您的使用！我们致力于提供一个安全、稳定、便捷的图床服务。</p>`; 
-        showDialog({ 
-            title: `云落图床 ${CURRENT_APP_VERSION} 版本更新`, 
-            content, 
-            buttons: [{ text: '好的，我知道了' }],
-            scrollable: true // 核心修复：启用内容滚动
-        }); 
-        localStorage.setItem(VERSION_KEY, CURRENT_APP_VERSION); 
-    }
-    
-    // --- 新增：关闭悼念模式逻辑 (已升级为多人物支持) ---
-    function closeMemorialMode(figures) {
-        // 生成当前纪念人物 ID 组合的哈希值
-        const idHash = sha256(figures.map(f => f.id).sort().join(','));
-
-        showDialog({
-            title: '确认关闭悼念模式',
-            content: `<p>当前已进入悼念模式，以纪念 <b>\( {figures.map(f => f.name).join('、')}</b> 等人物。</p><p>关闭后，横幅将消失，且如果开启了灰色模式，页面将恢复彩色。本次关闭状态（哈希值：<code> \){idHash.substring(0, 10)}...</code>）将保存。在当前纪念日内，横幅将不再显示。但如果下一个纪念日的人物组合发生变化，横幅仍会按照新组合的设置显示。</p><p><b>您确定要关闭悼念模式吗？</b></p>`,
-            buttons: [
-                { text: '取消' },
-                { text: '确定关闭', onClick: () => {
-                    localStorage.setItem(MEMORIAL_CLOSED_KEY, idHash);
-                    // 移除所有悼念模式的影响
-                    document.body.classList.remove('grayscale-mode');
-                    memorialBanner.style.display = 'none';
-                    themeToggleButton.disabled = false;
-                    
-                    // 恢复正常主题
-                    const savedTheme = localStorage.getItem(THEME_KEY);
-                    applyTheme(savedTheme || 'light');
-                    
-                    showSnackbar('悼念模式已关闭，页面恢复正常显示。');
-                }}
-            ]
-        });
-    }
-    
-    // --- 新增：显示多人物列表的弹窗 (升级版，支持显示description、years等细节) ---
-    function showMultipleMemorialDialog(figures) {
-        let listHtml = '<ul>';
-        figures.forEach(f => {
-            const date = f.memorialDates[0]; // 假设第一个日期为主要纪念日
-            const reason = date.type || '离世'; // 使用 type 作为 reason
-            listHtml += `<li>
-                <b>\( {f.name}</b> ( \){f.years})<br>
-                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">描述：${f.description || '无详细描述'}</span><br>
-                <span style="font-size: 14px; color: var(--md-sys-color-on-surface-variant);">纪念日期：\( {date.month}月 \){date.day}日（${reason}）</span>
-            </li>`;
-        });
-        listHtml += '</ul>';
-
-        showDialog({
-            title: '今日纪念人物列表',
-            content: `<p>今日是以下 \( {figures.length} 位人物的纪念日：</p> \){listHtml}<p>您可以通过右侧的 <i class="material-icons" style="font-size: 16px; vertical-align: middle;">close</i> 按钮关闭悼念模式。</p>`,
-            buttons: [
-                { text: '知道了' },
-            ],
-            scrollable: true
-        });
-    }
-    // --- 关闭悼念模式逻辑 END ---
-
-    // --- 纪念人物系统逻辑 (已更新，支持多人物) ---
-    function initMemorialSystem() {
-        if (typeof memorialFigures === 'undefined' || !memorialFigures.length) {
-            return;
-        }
-
-        const today = new Date();
-        const month = today.getMonth() + 1; // 1-based month
-        const day = today.getDate();
-        
-        // 1. 收集所有当日的纪念人物
-        const foundMemorials = memorialFigures.filter(figure => 
-            figure.memorialDates.some(date => 
-                date.month === month && date.day === day
-            )
-        );
-        
-        todayMemorialFigures = foundMemorials; // 保存到全局变量
-
-        // 2. 如果没有纪念人物，则退出
-        if (foundMemorials.length === 0) {
-            document.body.classList.remove('grayscale-mode');
-            memorialBanner.style.display = 'none';
-            themeToggleButton.disabled = false;
-            localStorage.removeItem(MEMORIAL_CLOSED_KEY); // 清除旧状态
-            return;
-        }
-
-        // 3. 生成当前人物 ID 组合的哈希值
-        const currentIdHash = sha256(foundMemorials.map(f => f.id).sort().join(','));
-        const memorialClosedHash = localStorage.getItem(MEMORIAL_CLOSED_KEY);
-
-        // 4. 检查用户是否已针对此人物组合关闭过悼念模式
-        if (memorialClosedHash === currentIdHash) {
-            console.log(`Memorial mode for hash ${currentIdHash.substring(0, 10)}... was previously closed by user.`);
-            return; // 退出，不应用悼念模式
-        }
-
-        // 5. 应用悼念模式
-        
-        // a. 处理横幅内容
-        const primaryFigure = foundMemorials[0];
-        let bannerText = primaryFigure.bannerText;
-        if (foundMemorials.length > 1) {
-            bannerText += ` ...（另有 ${foundMemorials.length - 1} 位人物）`;
-            $('#memorialIcon').style.display = 'inline'; // Show icon for multiple
-        } else {
-            $('#memorialIcon').style.display = 'none';
-        }
-        memorialBannerText.textContent = bannerText;
-        memorialBanner.style.display = 'flex';
-        closeMemorialButton.style.display = 'block';
-
-        // b. 应用自定义样式
-        for (const prop in primaryFigure.bannerStyle) {
-            memorialBanner.style[prop] = primaryFigure.bannerStyle[prop];
-        }
-
-        // c. 特殊处理：灰色模式
-        if (foundMemorials.some(f => f.id === 'yangzhenning')) { // 只要有一个人物需要强制灰色就应用
-            document.body.classList.add('grayscale-mode');
-            themeToggleButton.disabled = true; 
-            themeToggleButton.querySelector('.material-icons').textContent = 'dark_mode';
-            if (!localStorage.getItem('yunluo_grayscale_tip_shown')) {
-                showSnackbar(`已进入【沉痛悼念】模式，主题切换功能暂时禁用。`);
-                localStorage.setItem('yunluo_grayscale_tip_shown', 'true');
-            }
-        } else {
-            document.body.classList.remove('grayscale-mode');
-            themeToggleButton.disabled = false;
-        }
-        
-        // d. 恢复正常主题图标（如果不是灰色模式）
-        if (!document.body.classList.contains('grayscale-mode')) {
-            const savedTheme = localStorage.getItem(THEME_KEY);
-            applyTheme(savedTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-        }
-    }
-    // --- 纪念人物系统逻辑 END ---
-    
-    // Lightbox Function
-    function showLightbox(src) {
-        const overlay = document.createElement('div');
-        overlay.className = 'lightbox-overlay';
-        const img = document.createElement('img');
-        img.src = src;
-        img.style.maxWidth = '90%';
-        img.style.maxHeight = '90%';
-        overlay.appendChild(img);
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', () => overlay.remove());
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        
-        // 核心：在DOM加载完成后立即检查并应用纪念模式
-        initMemorialSystem();
-        
-        // 初始化今日上传计数
-        todayUploadCount = getTodayUploadCount();
-        updateWatermarkUI();
-        
-        // 正常主题初始化逻辑（仅在非悼念日生效）
-        const isGrayscaleMode = document.body.classList.contains('grayscale-mode');
-        if (!isGrayscaleMode) {
-            const savedTheme = localStorage.getItem(THEME_KEY), prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
-        }
-
-        const savedApi = localStorage.getItem(API_PREFERENCE_KEY);
-        if (savedApi && API_CONFIG[savedApi]) { apiSelector.value = savedApi; } else { apiSelector.value = 'yanxuan'; }
-        
-        fetchYiyan(); loadHistory(); updateApiSelectionUI(); handleFormatChange(currentUrlFormat); fetchVisitorCount();
-        if (localStorage.getItem(VERSION_KEY) !== CURRENT_APP_VERSION) { showChangelogDialog(); }
-        
-        // 如果历史记录中没有文件，强制折叠
-        if ($('#historyEmptyTip')) { setHistoryCollapseState(true); }
-
-        apiSelectorButton.addEventListener('click', showApiSelectorDialog);
-        imageUpload.addEventListener('change', e => handleFileSelect(e.target.files[0]));
-        uploadButton.addEventListener('click', uploadFile); 
-        refreshYiyanButton.addEventListener('click', fetchYiyan); 
-        clearHistoryButton.addEventListener('click', clearAllHistory); 
-        
-        // 新增：水印按钮事件
-        addWatermarkButton.addEventListener('click', handleAddWatermark);
-        
-        // 调整主题切换逻辑，在悼念日禁用
-        themeToggleButton.addEventListener('click', () => {
-            if (!document.body.classList.contains('grayscale-mode')) {
-                applyTheme(document.body.classList.contains('dark-mode') ? 'light' : 'dark');
-            } else {
-                showSnackbar('悼念日已启用灰色模式，主题切换暂时禁用。');
-            }
-        });
-        
-        // 新增：关闭悼念模式按钮按钮事件 (使用 todayMemorialFigures)
-        closeMemorialButton.addEventListener('click', (e) => {
-            e.stopPropagation(); // 阻止事件冒泡，以免干扰其他点击事件
-            if (todayMemorialFigures.length > 0) {
-                closeMemorialMode(todayMemorialFigures);
-            }
-        });
-
-        // 新增：双击横幅显示多人物列表
-        memorialBanner.addEventListener('dblclick', () => {
-            if (todayMemorialFigures.length > 0) {
-                showMultipleMemorialDialog(todayMemorialFigures);
-            }
-        });
-        
-        // 修复: 历史记录切换逻辑
-        toggleHistoryButton.addEventListener('click', () => setHistoryCollapseState(!historyList.classList.contains('hidden')));
-        
-        // Grid View Toggle
-        historyViewToggle.addEventListener('click', () => {
-            historyList.classList.toggle('grid');
-            const icon = historyViewToggle.querySelector('.material-icons');
-            icon.textContent = historyList.classList.contains('grid') ? 'view_list' : 'grid_view';
-        });
-        
-        copyUrlButton.addEventListener('click', () => {
-            copyToClipboard(resultUrlDisplay.textContent, `已复制 ${currentUrlFormat.toUpperCase()} 格式链接`);
-            const icon = copyUrlButton.querySelector('.material-icons');
-            const originalIcon = icon.textContent;
-            icon.textContent = 'check';
-            setTimeout(() => { icon.textContent = originalIcon; }, 1000);
-        });
-        enhanceImageButton.addEventListener('click', () => {
-            if (uploadedUrl && selectedFile) {
-                const isImage = selectedFile.type.startsWith('image/');
-                if (isImage) {
-                    enhanceImage(uploadedUrl, selectedFile.name);
-                } else {
-                     showSnackbar('AI 增强仅支持图片文件');
-                }
-            }
-        });
-        
-        urlFormatSelector.querySelectorAll('.chip').forEach(chip => { chip.addEventListener('click', function() { handleFormatChange(this.dataset.format); }); });
-        ['dragenter','dragover','dragleave','drop'].forEach(eName=>uploadArea.addEventListener(eName, e=>{e.preventDefault();e.stopPropagation();}, false));
-        ['dragenter','dragover'].forEach(eName=>uploadArea.addEventListener(eName, ()=>{ uploadArea.classList.add('dragover'); uploadTip.textContent = '松开即可选择文件'; }, false));
-        ['dragleave','drop'].forEach(eName=>uploadArea.addEventListener(eName, ()=>{ uploadArea.classList.remove('dragover'); uploadTip.textContent = selectedFile ? `文件已就绪: ${truncateFilename(selectedFile.name, 28)}` : '拖拽文件到这里或'; }, false));
-        uploadArea.addEventListener('drop', e => handleFileSelect(e.dataTransfer.files[0]));
-        
-        // History Interactions including Swipe
-        historyList.addEventListener('click', e => {
-            const target = e.target;
-            const deleteBtn = target.closest('.delete-button');
-            const enhanceBtn = target.closest('.enhance-button');
-            const watermarkBtn = target.closest('.watermark-button');
-            const openBtn = target.closest('.open-button');
-            const copyArea = target.closest('.history-item-info, .history-item-thumb');
-            const swipeDel = target.closest('.swipe-delete');
-            
-            if (deleteBtn || swipeDel) { 
-                const item = target.closest('.history-item');
-                const { url, name } = item.dataset; 
-                showDialog({ 
-                    title: '确认删除', 
-                    content: `确定要删除 "${name}" 吗？`, 
-                    buttons: [
-                        { text: '取消' },
-                        { text: '确定', onClick: () => deleteHistoryItem(url) }
-                    ] 
-                });
-            } else if (enhanceBtn) { 
-                const { url, name } = enhanceBtn.dataset; 
-                enhanceImage(url, name);
-            } else if (watermarkBtn) {
-                const { url, name } = watermarkBtn.dataset;
-                showCustomWatermarkDialog(url, name);
-            } else if (openBtn) { 
-                const { url } = openBtn.dataset;
-                window.open(url, '_blank');
-            } else if (copyArea) { 
-                const { url, name } = copyArea.parentElement.querySelector('.history-item-info').dataset; 
-                copyToClipboard(getFormattedUrl(url, name, 'url'), '历史文件 URL 已复制'); 
-            } else if (target.closest('.history-item-thumb')) {
-                const src = target.src;
-                if (src) showLightbox(src);
-            }
-        });
-        
-        // Swipe Gesture for Mobile
-        historyList.addEventListener('touchstart', e => {
-            const item = e.target.closest('.history-item');
-            if (!item) return;
-            let startX = e.touches[0].clientX;
-            const moveHandler = e => {
-                const deltaX = e.touches[0].clientX - startX;
-                if (deltaX < -50) {
-                    item.style.transform = `translateX(${deltaX}px)`;
-                    item.classList.add('swiped');
-                }
-            };
-            const endHandler = () => {
-                item.style.transform = '';
-                item.classList.remove('swiped');
-                item.removeEventListener('touchmove', moveHandler);
-                item.removeEventListener('touchend', endHandler);
-            };
-            item.addEventListener('touchmove', moveHandler);
-            item.addEventListener('touchend', endHandler);
-        });
-        
-        // FAB Click
-        fab.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            imageUpload.click();
-        });
-        
-        // Lightbox for Preview
-        imagePreview.addEventListener('click', () => {
-            if (imagePreview.src) showLightbox(imagePreview.src);
-        });
-    });
-</script>
 </body>
 </html>
