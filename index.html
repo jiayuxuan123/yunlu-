@@ -3,16 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="baidu-site-verification" content="codeva-H1CZxdC0LT" />
+    
     <title>云落 - 工具聚合</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <link href="https://lib.baomitu.com/material-design-icons/3.0.1/iconfont/material-icons.min.css" rel="stylesheet">
+    
     <style>
         :root {
-            --m3-primary: #0b57d0; /* 谷歌标准蓝色 */
-            --m3-surface: #f8f9fa;
-            --m3-card: #ffffff;
-            --text-dark: #1f1f1f;
-            --text-light: #444746;
-            --m3-outline: #c4c7c5;
+            /* M3 配色系统优化 */
+            --primary-color: #0b57d0;
+            --primary-container: #d3e3fd; /* 浅蓝背景 */
+            --on-primary-container: #041e49;
+            --surface-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-main: #1f1f1f;
+            --text-sub: #444746;
+            --outline-color: #e0e3e7;
+            
+            /* 阴影层级 */
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -20,87 +32,111 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Product Sans', 'Roboto', 'Noto Sans SC', sans-serif;
-            background-color: var(--m3-surface);
-            color: var(--text-dark);
+            /* 优化字体栈，优先使用系统自带的高质量中文字体，无需加载外部字体 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background-color: var(--surface-color);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            /* 页面入场动画 */
+            animation: fadeIn 0.6s ease-out;
         }
 
-        /* 顶部欢迎区 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 顶部欢迎区 - 增加磨砂质感 */
         .hero {
-            padding: 80px 24px 48px;
+            padding: 90px 24px 50px;
             text-align: center;
-            background: linear-gradient(180deg, #e7f0fe 0%, var(--m3-surface) 100%);
+            background: radial-gradient(circle at top, #e7f0fe 0%, var(--surface-color) 70%);
+            position: relative;
         }
 
         .hero h1 {
-            font-size: 40px;
-            font-weight: 400;
+            font-size: 42px;
+            font-weight: 600; /* 加粗一点显得更有分量 */
             margin: 0;
-            color: var(--m3-primary);
-            letter-spacing: -0.5px;
+            color: var(--primary-color);
+            letter-spacing: -1px;
+            line-height: 1.2;
         }
 
         .hero p {
             font-size: 16px;
-            color: var(--text-light);
+            color: var(--text-sub);
             margin-top: 12px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* 导航卡片布局 */
         .hub-container {
-            max-width: 900px;
+            max-width: 1000px; /* 稍微加宽一点 */
             margin: 0 auto;
-            padding: 0 20px 60px;
+            padding: 0 24px 60px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
+            gap: 20px; /* 间距调整 */
             width: 100%;
         }
 
-        /* M3 风格卡片 */
+        /* M3 风格卡片优化 */
         .hub-card {
-            background: var(--m3-card);
-            border: 1px solid var(--m3-outline);
-            border-radius: 28px; /* 典型的 M3 大圆角 */
-            padding: 24px;
+            background: var(--card-bg);
+            border: 1px solid var(--outline-color);
+            border-radius: 24px;
+            padding: 28px;
             text-decoration: none;
             color: inherit;
-            transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             display: flex;
             flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
         }
 
+        /* 悬停效果：上浮 + 阴影加深 + 边框变色 */
         .hub-card:hover {
-            background-color: #f1f3f4;
-            border-color: var(--m3-primary);
-            transform: scale(1.02);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+            border-color: rgba(11, 87, 208, 0.3);
         }
 
+        /* 卡片图标区域优化 */
         .card-icon {
-            width: 40px;
-            height: 40px;
-            background: #e3e3e3;
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            /* 改为浅蓝色背景，更协调 */
+            background: var(--primary-container);
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 20px;
-            color: var(--m3-primary);
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .hub-card:hover .card-icon {
+            transform: scale(1.1) rotate(-5deg); /* 趣味微动效 */
         }
 
         .card-title {
-            font-size: 22px;
-            font-weight: 500;
-            margin: 0 0 10px 0;
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: var(--text-main);
         }
 
         .card-desc {
             font-size: 14px;
-            color: var(--text-light);
+            color: var(--text-sub);
             line-height: 1.6;
             margin-bottom: 24px;
             flex-grow: 1;
@@ -111,26 +147,44 @@
             display: inline-flex;
             align-items: center;
             font-size: 14px;
-            font-weight: 500;
-            color: var(--m3-primary);
-            gap: 4px;
+            font-weight: 600;
+            color: var(--primary-color);
+            gap: 6px;
+            margin-top: auto; /* 确保按钮沉底对齐 */
+            padding: 8px 16px;
+            background-color: rgba(11, 87, 208, 0.04);
+            border-radius: 50px;
+            width: fit-content;
+            transition: background-color 0.2s;
+        }
+
+        .hub-card:hover .card-btn {
+            background-color: var(--primary-color);
+            color: #ffffff;
         }
 
         /* 页脚 */
         footer {
             margin-top: auto;
-            padding: 32px;
+            padding: 40px 20px;
             text-align: center;
-            color: var(--text-light);
-            font-size: 12px;
-            border-top: 1px solid #e0e0e0;
+            color: var(--text-sub);
+            font-size: 13px;
+            border-top: 1px solid var(--outline-color);
+            background-color: #fff;
         }
 
-        /* 针对移动端的微调 */
+        footer p {
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* 移动端适配 */
         @media (max-width: 600px) {
-            .hero { padding: 60px 20px 32px; }
+            .hero { padding: 60px 20px 40px; }
             .hero h1 { font-size: 32px; }
-            .hub-container { grid-template-columns: 1fr; }
+            .hub-container { grid-template-columns: 1fr; padding: 0 16px 40px; }
+            .hub-card { padding: 24px; }
         }
     </style>
 </head>
@@ -147,34 +201,32 @@
             <div class="card-icon"><i class="material-icons">cloud_circle</i></div>
             <h2 class="card-title">Nebula Search</h2>
             <p class="card-desc">聚合全网120+群组与12种云盘资源，一键触达影视、软件、短剧等海量内容。</p>
-            <div class="card-btn">立即进入 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+            <div class="card-btn">立即进入 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
         <a href="https://jiayuxuan123.rth1.xyz/云落解析.html" class="hub-card">
             <div class="card-icon"><i class="material-icons">movie_filter</i></div>
             <h2 class="card-title">云落解析</h2>
             <p class="card-desc">专注于哔哩哔哩与抖音视频的无损解析，支持高清视频提取与快捷预览。</p>
-            <div class="card-btn">开始解析 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+            <div class="card-btn">开始解析 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
         <a href="https://jiayuxuan123.rth1.xyz/StaticFetch.html" class="hub-card">
-            <div class="card-icon"><i class="material-icons">html</i></div>
-            <h2 class="card-title">网页源码获取</h2>
+            <div class="card-icon"><i class="material-icons">code</i></div> <h2 class="card-title">网页源码获取</h2>
             <p class="card-desc">快速抓取并分析网页静态源代码，提供格式化预览，开发者调试利器。</p>
-            <div class="card-btn">立即提取 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+            <div class="card-btn">立即提取 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
         <a href="https://jiayuxuan123.rth1.xyz/yunluo.html" class="hub-card">
-            <div class="card-icon"><i class="material-icons">photo_library</i></div>
-            <h2 class="card-title">云落图床</h2>
+            <div class="card-icon"><i class="material-icons">add_photo_alternate</i></div> <h2 class="card-title">云落图床</h2>
             <p class="card-desc">稳定可靠的图片托管平台，提供多种引用链接格式，让你的分享更简单。</p>
-            <div class="card-btn">上传图片 <i class="material-icons" style="font-size: 18px;">open_in_new</i></div>
+            <div class="card-btn">上传图片 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
     </main>
 
     <footer>
-      <p>yunluo.de5.net</p>
+      <p>&copy; 2026 Yunluo. All Rights Reserved. <br> yunluo.de5.net</p>
     </footer>
 
 </body>
