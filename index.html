@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
     
-    <title>云落工具箱 - 全网资源搜索 | 视频无损解析 | 网页源码提取 | 免费图床</title>
+    <title>云落云端控制台 - 开发者数据索引与媒体分析平台</title>
     
-    <meta name="description" content="云落工具聚合平台提供Nebula Search全网资源搜索、B站抖音视频无损解析下载、网页HTML源码在线提取及免费云落图床服务。极简设计，无广告，高效实用的站长与开发者工具箱。">
+    <meta name="description" content="云落(Yunluo)是一站式开发者辅助平台，提供Nebula数据索引、多媒体流格式分析预览、HTML结构可视化调试及静态资源云存储服务。致力于提升极客与开发者的工作效率。">
     
-    <meta name="keywords" content="云落, 云落工具箱, 视频解析, B站视频下载, 抖音无水印, Nebula Search, 资源搜索, 网页源码提取, 在线图床, 免费图床, 站长工具">
+    <meta name="keywords" content="云落, 开发者工具, 数据索引, 多媒体分析, 网页调试, 静态资源托管, Nebula Engine, 技术极客">
     
     <meta name="baidu-site-verification" content="codeva-H1CZxdC0LT" />
     <link href="https://lib.baomitu.com/material-design-icons/3.0.1/iconfont/material-icons.min.css" rel="stylesheet">
     
     <style>
         :root {
-            /* M3 配色系统优化 */
-            --primary-color: #0b57d0;
-            --primary-container: #d3e3fd; /* 浅蓝背景 */
-            --on-primary-container: #041e49;
-            --surface-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --text-main: #1f1f1f;
-            --text-sub: #444746;
-            --outline-color: #e0e3e7;
+            /* 配色微调：更深邃的科技蓝，提升专业感 */
+            --primary-color: #0052cc;
+            --primary-light: #2684ff;
+            --primary-container: #deebff;
+            --surface-color: #f4f5f7;
+            --card-bg: rgba(255, 255, 255, 0.95); /* 轻微透明 */
+            --text-main: #172b4d;
+            --text-sub: #5e6c84;
+            --outline-color: #dfe1e6;
             
-            /* 阴影层级 */
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
-            --shadow-hover: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+            --shadow-sm: 0 1px 2px rgba(9, 30, 66, 0.05);
+            --shadow-hover: 0 8px 16px -4px rgba(9, 30, 66, 0.1), 0 0 0 1px rgba(9, 30, 66, 0.04);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -36,65 +36,77 @@
         body {
             margin: 0;
             padding: 0;
-            /* 优化字体栈，优先使用系统自带的高质量中文字体，无需加载外部字体 */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
             background-color: var(--surface-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(38, 132, 255, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(0, 82, 204, 0.05) 0px, transparent 50%);
             color: var(--text-main);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            /* 页面入场动画 */
-            animation: fadeIn 0.6s ease-out;
+            animation: fadeIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* 顶部欢迎区 - 增加磨砂质感 */
+        /* 顶部区域优化：增加科技感 */
         .hero {
-            padding: 90px 24px 50px;
+            padding: 100px 24px 60px;
             text-align: center;
-            background: radial-gradient(circle at top, #e7f0fe 0%, var(--surface-color) 70%);
             position: relative;
         }
 
         .hero h1 {
-            font-size: 42px;
-            font-weight: 600; /* 加粗一点显得更有分量 */
+            font-size: 40px;
+            font-weight: 700;
             margin: 0;
-            color: var(--primary-color);
-            letter-spacing: -1px;
-            line-height: 1.2;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+        }
+
+        /* 增加一个“安全/合规”的标签 */
+        .hero-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #e3fcef;
+            color: #006644;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
         }
 
         .hero p {
-            font-size: 16px;
+            font-size: 18px;
             color: var(--text-sub);
-            margin-top: 12px;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
+            max-width: 580px;
+            margin: 0 auto;
+            line-height: 1.6;
         }
 
-        /* 导航卡片布局 */
         .hub-container {
-            max-width: 1000px; /* 稍微加宽一点 */
+            max-width: 1100px;
             margin: 0 auto;
-            padding: 0 24px 60px;
+            padding: 0 24px 80px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px; /* 间距调整 */
+            gap: 24px;
             width: 100%;
         }
 
-        /* M3 风格卡片优化 */
         .hub-card {
             background: var(--card-bg);
             border: 1px solid var(--outline-color);
-            border-radius: 24px;
-            padding: 28px;
+            border-radius: 20px;
+            padding: 32px;
             text-decoration: none;
             color: inherit;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -102,145 +114,146 @@
             flex-direction: column;
             box-shadow: var(--shadow-sm);
             position: relative;
-            overflow: hidden;
+            backdrop-filter: blur(10px); /* 磨砂质感 */
         }
 
-        /* 悬停效果：上浮 + 阴影加深 + 边框变色 */
         .hub-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-6px);
             box-shadow: var(--shadow-hover);
-            border-color: rgba(11, 87, 208, 0.3);
+            border-color: var(--primary-light);
+            background: #ffffff;
         }
 
-        /* 卡片图标区域优化 */
         .card-icon {
-            width: 48px;
-            height: 48px;
-            /* 改为浅蓝色背景，更协调 */
+            width: 52px;
+            height: 52px;
             background: var(--primary-container);
-            border-radius: 14px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
             color: var(--primary-color);
-            transition: transform 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .hub-card:hover .card-icon {
-            transform: scale(1.1) rotate(-5deg); /* 趣味微动效 */
+            transform: scale(1.1);
+            background: var(--primary-color);
+            color: #ffffff;
         }
 
         .card-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin: 0 0 8px 0;
+            font-size: 19px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
             color: var(--text-main);
-        }
-
-        /* 增加 h2 权重，利于 SEO */
-        .card-title h2 {
-            font-size: inherit;
-            font-weight: inherit;
-            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .card-desc {
             font-size: 14px;
             color: var(--text-sub);
             line-height: 1.6;
-            margin-bottom: 24px;
+            margin-bottom: 28px;
             flex-grow: 1;
         }
 
-        /* 引导按钮样式 */
         .card-btn {
             display: inline-flex;
             align-items: center;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--primary-color);
             gap: 6px;
-            margin-top: auto; /* 确保按钮沉底对齐 */
-            padding: 8px 16px;
-            background-color: rgba(11, 87, 208, 0.04);
-            border-radius: 50px;
-            width: fit-content;
-            transition: background-color 0.2s;
+            margin-top: auto;
+            padding: 10px 20px;
+            background-color: rgba(38, 132, 255, 0.08);
+            border-radius: 8px;
+            transition: all 0.2s ease;
         }
 
         .hub-card:hover .card-btn {
             background-color: var(--primary-color);
             color: #ffffff;
+            gap: 10px; /* 箭头移动动画 */
         }
 
-        /* 页脚 */
         footer {
             margin-top: auto;
             padding: 40px 20px;
             text-align: center;
             color: var(--text-sub);
-            font-size: 13px;
-            border-top: 1px solid var(--outline-color);
+            font-size: 12px;
             background-color: #fff;
+            border-top: 1px solid var(--outline-color);
         }
 
-        footer p {
-            margin: 0;
-            opacity: 0.8;
+        footer .disclaimer {
+            margin-top: 10px;
+            color: #999;
+            font-size: 11px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* 移动端适配 */
         @media (max-width: 600px) {
-            .hero { padding: 60px 20px 40px; }
+            .hero { padding: 80px 20px 40px; }
             .hero h1 { font-size: 32px; }
-            .hub-container { grid-template-columns: 1fr; padding: 0 16px 40px; }
-            .hub-card { padding: 24px; }
+            .hub-container { grid-template-columns: 1fr; padding: 0 16px 60px; }
         }
     </style>
 </head>
 <body>
 
     <header class="hero">
-        <h1>云落工具聚合</h1>
-        <p>简洁、高效的极简站长开发工具集</p>
+        <span class="hero-badge">DEV UTILITIES v2.0</span>
+        <h1>云落云端控制台</h1>
+        <p>面向未来的多维度数据检索与 Web 调试解决方案</p>
     </header>
 
     <main class="hub-container">
         
-        <a href="https://jiayuxuan123.rth1.xyz/NebulaSearch.html" class="hub-card">
-            <div class="card-icon"><i class="material-icons">cloud_circle</i></div>
-            <h2 class="card-title">Nebula Search 资源搜索</h2>
-            <p class="card-desc">聚合全网120+群组与12种云盘资源，一键触达影视、软件、短剧等海量内容。</p>
-            <div class="card-btn">立即进入 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
+        <a href="https://jiayuxuan123.rth1.xyz/NebulaSearch.html" class="hub-card" rel="nofollow noopener noreferrer">
+            <div class="card-icon"><i class="material-icons">dns</i></div>
+            <h2 class="card-title">Nebula Data Index <small style="font-size:0.7em; opacity:0.6; font-weight:400">数据引擎</small></h2>
+            <p class="card-desc">集成12+类云端存储协议的智能检索系统，支持开发者快速定位技术文档、开源项目及多媒体档案。</p>
+            <div class="card-btn">启动检索 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
-        <a href="https://jiayuxuan123.rth1.xyz/云落解析.html" class="hub-card">
-            <div class="card-icon"><i class="material-icons">movie_filter</i></div>
-            <h2 class="card-title">云落视频解析</h2>
-            <p class="card-desc">专注于哔哩哔哩(Bilibili)与抖音视频的无损解析，支持高清视频提取与快捷预览。</p>
-            <div class="card-btn">开始解析 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
+        <a href="https://jiayuxuan123.rth1.xyz/云落解析.html" class="hub-card" rel="nofollow noopener noreferrer">
+            <div class="card-icon"><i class="material-icons">analytics</i></div>
+            <h2 class="card-title">Media Stream Analysis <small style="font-size:0.7em; opacity:0.6; font-weight:400">流媒体调试</small></h2>
+            <p class="card-desc">针对流媒体平台（Bilibili/Douyin）的传输协议分析工具，提供原始数据流预览与素材归档功能，辅助视频创作研究。</p>
+            <div class="card-btn">进入控制台 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
-        <a href="https://jiayuxuan123.rth1.xyz/StaticFetch.html" class="hub-card">
-            <div class="card-icon"><i class="material-icons">code</i></div> 
-            <h2 class="card-title">网页源码获取工具</h2>
-            <p class="card-desc">快速抓取并分析网页静态源代码，提供格式化预览，开发者调试利器。</p>
-            <div class="card-btn">立即提取 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
+        <a href="https://jiayuxuan123.rth1.xyz/StaticFetch.html" class="hub-card" rel="nofollow noopener noreferrer">
+            <div class="card-icon"><i class="material-icons">integration_instructions</i></div> 
+            <h2 class="card-title">Source Inspector <small style="font-size:0.7em; opacity:0.6; font-weight:400">源码审计</small></h2>
+            <p class="card-desc">Web前端静态结构抓取与DOM分析器，支持即时格式化预览，帮助开发者进行UI还原度测试与代码审计。</p>
+            <div class="card-btn">开始调试 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
-        <a href="https://jiayuxuan123.rth1.xyz/yunluo.html" class="hub-card">
-            <div class="card-icon"><i class="material-icons">add_photo_alternate</i></div> 
-            <h2 class="card-title">云落免费图床</h2>
-            <p class="card-desc">稳定可靠的图片托管平台，提供多种引用链接格式，让你的分享更简单。</p>
-            <div class="card-btn">上传图片 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
+        <a href="https://jiayuxuan123.rth1.xyz/yunluo.html" class="hub-card" rel="nofollow noopener noreferrer">
+            <div class="card-icon"><i class="material-icons">cloud_upload</i></div> 
+            <h2 class="card-title">Cloud Object Storage <small style="font-size:0.7em; opacity:0.6; font-weight:400">云存储</small></h2>
+            <p class="card-desc">轻量级静态资源托管服务，提供稳定的CDN分发链接，适用于博客配图、开发测试素材托管。</p>
+            <div class="card-btn">管理文件 <i class="material-icons" style="font-size: 16px;">arrow_forward</i></div>
         </a>
 
     </main>
 
     <footer>
-      <p>&copy; 2026 Yunluo. All Rights Reserved. <br> yunluo.de5.net - 专业的在线工具箱</p>
+      <p>&copy; 2026 Yunluo DevTeam. All Rights Reserved. | yunluo.de5.net</p>
+      <div class="disclaimer">
+          本站工具仅供技术研究、软件调试及学习交流使用。请勿利用本站工具下载版权保护内容或从事任何违反当地法律法规的行为。用户使用产生的一切后果由用户自行承担。
+      </div>
     </footer>
 
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"version":"2024.11.0","token":"5f9f0bc864cd41c3929abda70bfa1b97","r":1,"server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
